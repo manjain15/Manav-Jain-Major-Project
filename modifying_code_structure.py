@@ -74,42 +74,112 @@ def main():
         counter+=1
 
     # START OF GUI CODE
-    ctk.set_appearance_mode("System")
+    ctk.set_appearance_mode("System") 
 
-    # CODE FOR SCREEN WITH LIST OF ROUTES
-    class trip_screen(tk.Frame):
+    # CODE FOR MAIN SCREEN ( OPENS UPON STARTUP OF PROGRAM )
+    class main_screen(tk.Frame):
         def __init__(self, *args, **kwargs):
             tk.Frame.__init__(self, *args, **kwargs)
-            #p1 = add_trip(self)
+            p1 = choose_starting_stop(self)
 
             buttonframe = tk.Frame(self)
             container = tk.Frame(self)
             buttonframe.pack(side="top", fill="x", expand=False)
             container.pack(side="top", fill="both", expand=True)
 
-            starting_stop_id = stations[starting_stop]
-            destination_stop_id = stations[destination_stop]
+            p1.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
 
-            journey = tnsw.get_trip(starting_stop_id, destination_stop_id, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJwMWpGZWhGZTB4cHJiT05OMWxsenBHYUN1UkNhN1VIMGxNNTl4UDZURkpzIiwiaWF0IjoxNzAzMTM4ODY4fQ.1pTAXxfPAJ64BzqxaRU9xnFPflsJ0niKPDC6BBmDpkk')
-            due = str(journey["due"])
-            departure_time = str(journey["departure_time"])
-            arrival_time = str(journey["arrival_time"])
+            heading = ctk.CTkLabel(master=container, justify="center", text="ViewTrip", corner_radius=10, )
+            heading.pack(side="top", fill="x")
 
-            time_till_arrival = ctk.CTkLabel(master=container, width=50, height=50, text=due + " minutes",bg_color="light blue", text_color="white")
-            time_till_arrival.grid(column=0, row=1)
+            add_new_trip = ctk.CTkButton(master=container, text="+", command=p1.show, corner_radius=10)
+            add_new_trip.pack(side="bottom", fill="x")
 
-            starting_stop_label = ctk.CTkLabel(master=container, height=5, text=starting_stop)
-            starting_stop_label.grid(column=1, row=0)
+            welcome_label = ctk.CTkLabel(master=container, text="Welcome to ViewTrip", bg_color="grey", corner_radius=10)
+            welcome_label.pack(pady=10)
 
-            departing = ctk.CTkLabel(master=container, text=departure_time[11:16] + " pm", width=50, height=45)
-            departing.grid(column=1, row=1, padx=5)
+            welcome_information = ctk.CTkLabel(master=container, text="To get started, press the plus button to add a new trip.", bg_color="orange", corner_radius=10)
+            welcome_information.pack()
 
-            arriving = ctk.CTkLabel(master=container, text=arrival_time[11:16] + " pm", width=50, height=45)
-            arriving.grid(column=6, row=1, padx=5)
+    if __name__ == "__main__":
+        root = tk.Tk()
+        root.title("ViewTrip")
+        main = main_screen(root)
+        main.pack(side="top", fill="both", expand=True)
+        root.wm_geometry("400x400")
+        root.mainloop()
 
+# CODE FOR PAGE WHERE USERS CHOOSE STARTING STOP
+    class choose_starting_stop(tk.Frame):
+        def __init__(self, *args, **kwargs):
+            tk.Frame.__init__(self, *args, **kwargs)
+            p2 = choose_destination_stop(self)
+
+            buttonframe = tk.Frame(self)
+            container = tk.Frame(self)
+            container.option_add("*Font", "Times")
+            buttonframe.pack(side="top", fill="x", expand=False)
+            container.pack(side="top", fill="both", expand=True)
+
+            p2.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+
+            def checkkey(event): 
+                value = event.widget.get()
+
+                # get data from stations 
+                if value == '': 
+                    data = stations.keys()
+                else: 
+                    data = [] 
+                    for item in stations.keys(): 
+                        if value.lower() in item.lower(): 
+                            data.append(item)				 
+
+                # update data in listbox 
+                update(data) 
+
+            def update(data):
+                # clear previous data
+                dropdown.delete(0, 'end') 
+                # put new data 
+                for item in data:
+                    dropdown.insert('end', item) 
+            
+            # entry box
+            entry = ctk.CTkEntry(master=container, placeholder_text="Enter starting stop...", width=300)
+            entry.pack()
+            entry.bind("<KeyRelease>", checkkey)
+
+            # create scrollbar
+            dropdown_frame = ctk.CTkFrame(container)
+            scrollbar = tk.Scrollbar(dropdown_frame, orient="vertical")
+
+            # creating list box 
+            dropdown = tk.Listbox(dropdown_frame, width=40, yscrollcommand=scrollbar.set, font=("Times", 16))
+
+            scrollbar.config(command=dropdown.yview)
+            scrollbar.pack(side="right", fill="y")
+            dropdown.pack() 
+            dropdown_frame.pack()
+            update(stations.keys())
+
+            def change_text(txt):
+                entry.delete(0,'end')
+                entry.insert(0,txt)
+
+            def get_starting_stop():
+                global starting_stop
+                starting_stop = entry.get()
+
+            # binding double click on listbox item to paste value of selected item into entry box
+            dropdown.bind("<Double-1>", lambda event: change_text(dropdown.get(dropdown.curselection())))
+
+            # button to take user to next window 
+            confirm_selection = ctk.CTkButton(master=container, text="Choose this stop", command=lambda: [p2.show(), get_starting_stop()])
+            confirm_selection.pack()
 
         def show(self):
-            self.lift() 
+            self.lift()
 
     # CODE FOR PAGE WHERE USERS CHOOSE DESTINATION STOP
     class choose_destination_stop(tk.Frame):
@@ -181,112 +251,43 @@ def main():
             confirm_selection.pack()
 
         def show(self):
-            self.lift() 
+            self.lift()
 
-    # CODE FOR PAGE WHERE USERS CHOOSE STARTING STOP
-    class choose_starting_stop(tk.Frame):
+    # CODE FOR SCREEN WITH LIST OF ROUTES
+    class trip_screen(tk.Frame):
         def __init__(self, *args, **kwargs):
             tk.Frame.__init__(self, *args, **kwargs)
-            p2 = choose_destination_stop(self)
+            #p1 = add_trip(self)
 
             buttonframe = tk.Frame(self)
             container = tk.Frame(self)
-            container.option_add("*Font", "Times")
             buttonframe.pack(side="top", fill="x", expand=False)
             container.pack(side="top", fill="both", expand=True)
 
-            p2.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+            starting_stop_id = stations[starting_stop]
+            destination_stop_id = stations[destination_stop]
 
-            def checkkey(event): 
-                value = event.widget.get()
+            journey = tnsw.get_trip(starting_stop_id, destination_stop_id, 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJwMWpGZWhGZTB4cHJiT05OMWxsenBHYUN1UkNhN1VIMGxNNTl4UDZURkpzIiwiaWF0IjoxNzAzMTM4ODY4fQ.1pTAXxfPAJ64BzqxaRU9xnFPflsJ0niKPDC6BBmDpkk')
+            due = str(journey["due"])
+            departure_time = str(journey["departure_time"])
+            arrival_time = str(journey["arrival_time"])
 
-                # get data from stations 
-                if value == '': 
-                    data = stations.keys()
-                else: 
-                    data = [] 
-                    for item in stations.keys(): 
-                        if value.lower() in item.lower(): 
-                            data.append(item)				 
+            time_till_arrival = ctk.CTkLabel(master=container, width=50, height=50, text=due + " minutes",bg_color="light blue", text_color="white")
+            time_till_arrival.grid(column=0, row=1)
 
-                # update data in listbox 
-                update(data) 
+            starting_stop_label = ctk.CTkLabel(master=container, height=5, text=starting_stop)
+            starting_stop_label.grid(column=1, row=0)
 
-            def update(data):
-                # clear previous data
-                dropdown.delete(0, 'end') 
-                # put new data 
-                for item in data:
-                    dropdown.insert('end', item) 
-            
-            # entry box
-            entry = ctk.CTkEntry(master=container, placeholder_text="Enter starting stop...", width=300)
-            entry.pack()
-            entry.bind("<KeyRelease>", checkkey)
+            departing = ctk.CTkLabel(master=container, text=departure_time[11:16] + " pm", width=50, height=45)
+            departing.grid(column=1, row=1, padx=5)
 
-            # create scrollbar
-            dropdown_frame = ctk.CTkFrame(container)
-            scrollbar = tk.Scrollbar(dropdown_frame, orient="vertical")
+            arriving = ctk.CTkLabel(master=container, text=arrival_time[11:16] + " pm", width=50, height=45)
+            arriving.grid(column=6, row=1, padx=5)
 
-            # creating list box 
-            dropdown = tk.Listbox(dropdown_frame, width=40, yscrollcommand=scrollbar.set, font=("Times", 16))
-
-            scrollbar.config(command=dropdown.yview)
-            scrollbar.pack(side="right", fill="y")
-            dropdown.pack() 
-            dropdown_frame.pack()
-            update(stations.keys())
-
-            def change_text(txt):
-                entry.delete(0,'end')
-                entry.insert(0,txt)
-
-            def get_starting_stop():
-                global starting_stop
-                starting_stop = entry.get()
-
-            # binding double click on listbox item to paste value of selected item into entry box
-            dropdown.bind("<Double-1>", lambda event: change_text(dropdown.get(dropdown.curselection())))
-
-            # button to take user to next window 
-            confirm_selection = ctk.CTkButton(master=container, text="Choose this stop", command=lambda: [p2.show(), get_starting_stop()])
-            confirm_selection.pack()
 
         def show(self):
-            self.lift() 
-
-    # CODE FOR MAIN SCREEN ( OPENS UPON STARTUP OF PROGRAM )
-    class main_screen(tk.Frame):
-        def __init__(self, *args, **kwargs):
-            tk.Frame.__init__(self, *args, **kwargs)
-            p1 = choose_starting_stop(self)
-
-            buttonframe = tk.Frame(self)
-            container = tk.Frame(self)
-            buttonframe.pack(side="top", fill="x", expand=False)
-            container.pack(side="top", fill="both", expand=True)
-
-            p1.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
-
-            heading = ctk.CTkLabel(master=container, justify="center", text="ViewTrip", corner_radius=10, )
-            heading.pack(side="top", fill="x")
-
-            add_new_trip = ctk.CTkButton(master=container, text="+", command=p1.show, corner_radius=10)
-            add_new_trip.pack(side="bottom", fill="x")
-
-            welcome_label = ctk.CTkLabel(master=container, text="Welcome to ViewTrip", bg_color="grey", corner_radius=10)
-            welcome_label.pack(pady=10)
-
-            welcome_information = ctk.CTkLabel(master=container, text="To get started, press the plus button to add a new trip.", bg_color="orange", corner_radius=10)
-            welcome_information.pack()
-
-    if __name__ == "__main__":
-        root = tk.Tk()
-        root.title("ViewTrip")
-        main = main_screen(root)
-        main.pack(side="top", fill="both", expand=True)
-        root.wm_geometry("400x400")
-        root.mainloop()
+            self.lift()
 
 if __name__ == "__main__":
     main()
+
