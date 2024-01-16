@@ -9,8 +9,8 @@ import re
 from TransportNSW import TransportNSW
 tnsw = TransportNSW()
 
-# starting_stop = "Albury Station"
-# destination_stop = "Aberdeen Station"
+starting_stop = "Albury Station"
+destination_stop = "Aberdeen Station"
 
 # CODE FOR PARSING SYDNEYTRAINS API
 def get_gtfs_data(api_key):
@@ -87,6 +87,8 @@ def main():
             buttonframe.pack(side="top", fill="x", expand=False)
             container.pack(side="top", fill="both", expand=True)
 
+            # container.columnconfigure(2, weight=2)
+
             starting_stop_id = stations[starting_stop]
             destination_stop_id = stations[destination_stop]
 
@@ -95,17 +97,25 @@ def main():
             departure_time = str(journey["departure_time"])
             arrival_time = str(journey["arrival_time"])
 
-            time_till_arrival = ctk.CTkLabel(master=container, width=50, height=50, text=due + " minutes",bg_color="light blue", text_color="white")
-            time_till_arrival.grid(column=0, row=1)
+            time_till_arrival = ctk.CTkLabel(master=container, width=50, height=50, text=due + " minutes", bg_color="light blue", text_color="white")
+            time_till_arrival.grid(column=0, row=0, columnspan=2)
 
-            starting_stop_label = ctk.CTkLabel(master=container, height=5, text=starting_stop)
-            starting_stop_label.grid(column=1, row=0)
+            departing_frame = ctk.CTkFrame(container, width=50, height=50)
+            starting_stop_label = ctk.CTkLabel(master=departing_frame, height=1, text=starting_stop)
+            starting_stop_label.pack()
+            departing = ctk.CTkLabel(master=departing_frame, text=departure_time[11:16] + " pm")
+            departing.pack()
+            departing_frame.grid(column=2, row=0, columnspan=2)
 
-            departing = ctk.CTkLabel(master=container, text=departure_time[11:16] + " pm", width=50, height=45)
-            departing.grid(column=1, row=1, padx=5)
+            # empty_label = ctk.CTkLabel(master=container, width=50, height=50, text="          \n          ")
+            # empty_label.grid(column=2, row=0)
 
-            arriving = ctk.CTkLabel(master=container, text=arrival_time[11:16] + " pm", width=50, height=45)
-            arriving.grid(column=6, row=1, padx=5)
+            arriving_frame = ctk.CTkFrame(container, width=50, height=50)
+            arriving_stop_label = ctk.CTkLabel(master=arriving_frame, height=1, text=destination_stop)
+            arriving_stop_label.pack()
+            arriving = ctk.CTkLabel(master=arriving_frame, text=arrival_time[11:16] + " pm")
+            arriving.pack()
+            arriving_frame.grid(column=4, row=0)
 
 
         def show(self):
