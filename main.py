@@ -98,24 +98,27 @@ def main():
             arrival_time = str(journey["arrival_time"])
 
             time_till_arrival = ctk.CTkLabel(master=container, width=50, height=50, text=due + " minutes", bg_color="light blue", text_color="white")
-            time_till_arrival.grid(column=0, row=0, columnspan=2)
+            time_till_arrival.grid(column=0, row=0)
+
+            container.grid_columnconfigure(1, weight=1)
+            container.grid_columnconfigure(2, weight=1)
 
             departing_frame = ctk.CTkFrame(container, width=50, height=50)
-            starting_stop_label = ctk.CTkLabel(master=departing_frame, height=1, text=starting_stop)
+            starting_stop_label = ctk.CTkLabel(master=departing_frame, height=1, text=starting_stop, anchor="w")
             starting_stop_label.pack()
-            departing = ctk.CTkLabel(master=departing_frame, text=departure_time[11:16] + " pm")
+            departing = ctk.CTkLabel(master=departing_frame, text=departure_time[11:16] + " pm", anchor="w")
             departing.pack()
-            departing_frame.grid(column=2, row=0, columnspan=2)
+            departing_frame.grid(column=1, row=0)
 
             # empty_label = ctk.CTkLabel(master=container, width=50, height=50, text="          \n          ")
-            # empty_label.grid(column=2, row=0)
+            # empty_label.grid(column=4, row=0, columnspan=100)
 
             arriving_frame = ctk.CTkFrame(container, width=50, height=50)
             arriving_stop_label = ctk.CTkLabel(master=arriving_frame, height=1, text=destination_stop)
             arriving_stop_label.pack()
             arriving = ctk.CTkLabel(master=arriving_frame, text=arrival_time[11:16] + " pm")
             arriving.pack()
-            arriving_frame.grid(column=4, row=0)
+            arriving_frame.grid(column=2, row=0)
 
 
         def show(self):
