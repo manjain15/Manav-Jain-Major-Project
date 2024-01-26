@@ -83,7 +83,7 @@ def main():
             if key == "stop_name":
                 stop_name = val
                 stops.update({stop_name:stop_id})
-        counter+=1
+        counter+=1         
 
     # START OF AUTOCOMPLETE COMBOBOX CODE
     tkinter_umlauts=['odiaeresis', 'adiaeresis', 'udiaeresis', 'Odiaeresis', 'Adiaeresis', 'Udiaeresis', 'ssharp']
@@ -307,42 +307,50 @@ def main():
             type_dm = 'stop' # str | This specifies the type of results expected based on the search input in `name_dm`. By specifying `any`, locations of all types can be returned. Typically, this API call is used for a specific stop, so `stop` should be used along with a stop ID or global stop ID in `name_dm`.  (default to stop)
             name_dm = start_station # str | This is the search term that will be used to find locations. If the combination of this value and `type_dm` results in more than one location found - or `mode` is not set to `direct`, then a list of stops and no departures will be returned. If `type_dm` is set to `stop` then this value can take a stop ID or a global stop ID.  (default to 10111010)
             mode = 'direct' # str | This allows the departure board to display directly without going through the stop verification process. Use this when the stop is known. This relies on the given combination of `type_dm` and `name_dm` returning only a single result, otherwise a list of stops and no departures shall be returned.  (optional) (default to direct)
-            #name_key_dm = '$USEPOINT$' # str | Setting this parameter to `$USEPOINT$` enables you to request departures for a specific platform within a station. If this isn't used, then departures for all platforms at the stop specified in `name_dm` are returned.  (optional)
-            itd_date = date.today().strftime("%Y%m%d") # str | The reference date used when searching trips, in `YYYYMMDD` format. For instance, 20160901 refers to 1 September 2016. Works in conjunction with the `itdTime` value. If not specified, the current server date is used.  (optional) (default to 20161001)
-            itd_time = datetime.now().strftime("%H%M") # str | The reference time used when searching trips, in `HHMM` 24-hour format. For instance, 2215 refers to 10:15 PM. | Works in conjunction with the `itdDate` value. If not specified, the current server time is used.  (optional) (default to 1200)
+            # name_key_dm = '$USEPOINT$' # str | Setting this parameter to `$USEPOINT$` enables you to request departures for a specific platform within a station. If this isn't used, then departures for all platforms at the stop specified in `name_dm` are returned.  (optional)
+            # itd_date = date.today().strftime("%Y%m%d") # str | The reference date used when searching trips, in `YYYYMMDD` format. For instance, 20160901 refers to 1 September 2016. Works in conjunction with the `itdTime` value. If not specified, the current server date is used.  (optional) (default to 20161001)
+            # itd_time = datetime.now().strftime("%H%M") # str | The reference time used when searching trips, in `HHMM` 24-hour format. For instance, 2215 refers to 10:15 PM. | Works in conjunction with the `itdDate` value. If not specified, the current server time is used.  (optional) (default to 1200)
             departure_monitor_macro = 'true' # str | Including this parameter enables a number of options that result in the departure monitor operating in the same way as the Transport for NSW Trip Planner web site. It is recommended this is enabled, along with the `TfNSWDM` parameter.  (optional) (default to true)
             excluded_means = 'checkbox' # str | This parameter which means of transport to exclude from the departure monitor. To exclude one means, select one of the following: `1` = train, `2` = metro, `4` = light rail, `5` = bus, `7` = coach, `9` = ferry, `11` = school bus. `checkbox` allows you to exclude more than one means of transport when used in conjunction with the `exclMOT_<ID>` parameters.  (optional)
             excl_mot_1 = '1' # str | Excludes train services from the departure monitor.  Must be used in conjunction with `excludedMeans=checkbox`  (optional)
             excl_mot_2 = '2' # str | Excludes metro services from the departure monitor.  Must be used in conjunction with `excludedMeans=checkbox`  (optional)
             excl_mot_4 = '4' # str | Excludes light rail services from the departure monitor.  Must be used in conjunction with `excludedMeans=checkbox`  (optional)
-            #excl_mot_5 = '5' # str | Excludes bus services from the departure monitor.  Must be used in conjunction with `excludedMeans=checkbox`  (optional)
+            # excl_mot_5 = '5' # str | Excludes bus services from the departure monitor.  Must be used in conjunction with `excludedMeans=checkbox`  (optional)
             excl_mot_7 = '7' # str | Excludes coach services from the departure monitor.  Must be used in conjunction with `excludedMeans=checkbox`  (optional)
             excl_mot_9 = '9' # str | Excludes ferry services from the departure monitor.  Must be used in conjunction with `excludedMeans=checkbox`  (optional)
-            excl_mot_11 = '11' # str | Excludes school bus services from the departure monitor.  Must be used in conjunction with `excludedMeans=checkbox`  (optional)
+            # excl_mot_11 = '11' # str | Excludes school bus services from the departure monitor.  Must be used in conjunction with `excludedMeans=checkbox`  (optional)
             tf_nswdm = 'true' # str | Including this parameter enables a number of options that result in the departure monitor operating in the same way as the Transport for NSW Trip Planner web site, including enabling real-time data. It is recommended this is enabled, along with the `departureMonitorMacro` parameter.  (optional) (default to true)
             version = '10.2.1.42' # str | Indicates which version of the API the caller is expecting for both request and response data. Note that if this version differs from the version listed above then the returned data may not be as expected.  (optional) (default to 10.2.1.42)
 
             try:
                 # Provides capability to provide NSW public transport departure information from a stop, station or wharf including real-time.
-                api_response = api_instance.tfnsw_dm_request(output_format, coord_output_format, type_dm, name_dm, mode=mode, departure_monitor_macro=departure_monitor_macro, excluded_means=excluded_means, excl_mot_1=excl_mot_1, excl_mot_2=excl_mot_2, excl_mot_4=excl_mot_4, excl_mot_7=excl_mot_7, excl_mot_9=excl_mot_9, excl_mot_11=excl_mot_11, tf_nswdm=tf_nswdm, version=version)
+                api_response = api_instance.tfnsw_dm_request(output_format, coord_output_format, type_dm, name_dm, mode=mode, departure_monitor_macro=departure_monitor_macro, excluded_means=excluded_means, excl_mot_1=excl_mot_1, excl_mot_2=excl_mot_2, excl_mot_4=excl_mot_4, excl_mot_7=excl_mot_7, excl_mot_9=excl_mot_9, tf_nswdm=tf_nswdm, version=version)
                 api_dictionary = api_response.__dict__
                 #print(api_dictionary.keys()) --> dict_keys(['_error', '_locations', '_stop_events', '_version', 'discriminator'])
                 # Assuming api_response is the dictionary response
                 stop_events_data = api_dictionary['_stop_events']
                 train_info = []
 
-                for stop_event in stop_events_data:
-                    stop_event_dict = stop_event.__dict__
-                    departure_time = stop_event_dict['_departure_time_planned'][11:19]
-                    location = stop_event_dict['_location']
-                    location_name = location.name
-                    transportation = stop_event_dict['_transportation']
-                    transportation_description = transportation.description
-                    route_name = transportation.disassembled_name
-                    arrival_time = "Unknown"
+                if stop_events_data is None:
+                      transportation_description = "None Found"
+                      route_name = "None Found"
+                      departure_time = "None Found"
+                      arrival_time = "None Found"
+                      
+                      train_info.append((transportation_description, route_name, departure_time, arrival_time))
 
-                    train_info.append((transportation_description, route_name, departure_time, arrival_time))
-
+                else:
+                      for stop_event in stop_events_data:
+                            stop_event_dict = stop_event.__dict__
+                            departure_time = stop_event_dict['_departure_time_planned'][11:19]
+                            location = stop_event_dict['_location']
+                            location_name = location.name
+                            transportation = stop_event_dict['_transportation']
+                            transportation_description = transportation.description
+                            route_name = transportation.disassembled_name
+                            arrival_time = "Unknown"    
+                            
+                            train_info.append((transportation_description, route_name, departure_time, arrival_time))
 
             except ApiException as e:
                 print("Exception when calling DefaultApi->tfnsw_dm_request: %s\n" % e)
