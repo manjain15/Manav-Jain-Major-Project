@@ -1,18 +1,12 @@
-from __future__ import print_function
-import time
-import swagger_client
-from swagger_client.rest import ApiException
 from pprint import pprint
 from datetime import date, datetime, timedelta
 import tkinter as tk
 from tkinter import ttk
-import random
 import customtkinter as ctk
 from CTkListbox import *
 import requests
 import zipfile
 import io
-from io import StringIO
 import re
 from TransportNSW import TransportNSW
 tnsw = TransportNSW()
@@ -255,13 +249,25 @@ def main():
             destination_combobox.set_completion_list(destination_stations)
             destination_combobox.grid(row=1, column=1, padx=10, pady=10)
 
-            show_trains_button = ctk.CTkButton(selection_screen, text="Next", command=lambda: self.show_train_screen(start_station_combobox.get(), destination_combobox.get()))
-            show_trains_button.grid(row=2, column=0, columnspan=2, pady=10)
+            ctk.CTkLabel(selection_screen, text="What day would you like to depart?").grid(row=2, column=0, padx=10, pady=10)
+            departure_day_entry = ctk.CTkEntry(selection_screen, placeholder_text="YYYYMMDD")
+            departure_day_entry.grid(row=2, column=1, padx=10, pady=10)
+
+            ctk.CTkLabel(selection_screen, text="What time would you like to depart?").grid(row=3, column=0, padx=10, pady=10)
+            departure_time_entry = ctk.CTkEntry(selection_screen, placeholder_text="HHDD (24 Hour Time)")
+            departure_time_entry.grid(row=3, column=1, padx=10, pady=10)
+
+            ctk.CTkLabel(selection_screen, text="How many trip options would you like?").grid(row=4, column=0, padx=10, pady=10)
+            no_of_trips_entry = ctk.CTkEntry(selection_screen, placeholder_text="Enter a number greater than or equal to 1")
+            no_of_trips_entry.grid(row=4, column=1, padx=10, pady=10)
+
+            show_trains_button = ctk.CTkButton(selection_screen, text="Next", command=lambda: self.show_train_screen(start_station_combobox.get(), destination_combobox.get(), departure_day_entry.get(), departure_time_entry.get(), no_of_trips_entry.get()))
+            show_trains_button.grid(row=5, column=0, columnspan=2, pady=10)
 
             self.current_screen = selection_screen
 
         # CODE FOR THIRD SCREEN
-        def show_train_screen(self, start_station, destination_station):
+        def show_train_screen(self, start_station, destination_station, departure_day, departure_time, no_of_trips):
             if self.current_screen:
                 self.current_screen.destroy()
 
@@ -283,7 +289,7 @@ def main():
 
             start_stop_id = stops[start_station][1:]
             destination_stop_id = stops[destination_station][1:]
-            train_info = self.get_train_info(start_stop_id, destination_stop_id)
+            train_info = self.get_train_info(start_stop_id, destination_stop_id, departure_day, departure_time, no_of_trips)
 
             for train in train_info:
                 tree.insert("", "end", values=train)
@@ -294,68 +300,64 @@ def main():
             self.current_screen = train_screen
 
         # CODE TO RETRIEVE PARSED DATA FROM TNSW API
-        def get_train_info(self, start_station, destination_station):
-            # Configure API key authorization: APIKey
-            configuration = swagger_client.Configuration()
-            configuration.api_key['Authorization'] = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJwMWpGZWhGZTB4cHJiT05OMWxsenBHYUN1UkNhN1VIMGxNNTl4UDZURkpzIiwiaWF0IjoxNzAzMTM4ODY4fQ.1pTAXxfPAJ64BzqxaRU9xnFPflsJ0niKPDC6BBmDpkk'
-            configuration.api_key_prefix['Authorization'] = 'apiKey'
-
-            # create an instance of the API class
-            api_instance = swagger_client.DefaultApi(swagger_client.ApiClient(configuration))
-            output_format = 'rapidJSON' # str | Used to set the response data type. This documentation only covers responses that use the JSON format. Setting the `outputFormat` value to `rapidJSON` is required to enable JSON output. 
-            coord_output_format = 'EPSG:4326' # str | This specifies the format the coordinates are returned in. While other variations are available, the `EPSG:4326` format will return the widely-used format.
-            type_dm = 'stop' # str | This specifies the type of results expected based on the search input in `name_dm`. By specifying `any`, locations of all types can be returned. Typically, this API call is used for a specific stop, so `stop` should be used along with a stop ID or global stop ID in `name_dm`.  (default to stop)
-            name_dm = start_station # str | This is the search term that will be used to find locations. If the combination of this value and `type_dm` results in more than one location found - or `mode` is not set to `direct`, then a list of stops and no departures will be returned. If `type_dm` is set to `stop` then this value can take a stop ID or a global stop ID.  (default to 10111010)
-            mode = 'direct' # str | This allows the departure board to display directly without going through the stop verification process. Use this when the stop is known. This relies on the given combination of `type_dm` and `name_dm` returning only a single result, otherwise a list of stops and no departures shall be returned.  (optional) (default to direct)
-            # name_key_dm = '$USEPOINT$' # str | Setting this parameter to `$USEPOINT$` enables you to request departures for a specific platform within a station. If this isn't used, then departures for all platforms at the stop specified in `name_dm` are returned.  (optional)
-            # itd_date = date.today().strftime("%Y%m%d") # str | The reference date used when searching trips, in `YYYYMMDD` format. For instance, 20160901 refers to 1 September 2016. Works in conjunction with the `itdTime` value. If not specified, the current server date is used.  (optional) (default to 20161001)
-            # itd_time = datetime.now().strftime("%H%M") # str | The reference time used when searching trips, in `HHMM` 24-hour format. For instance, 2215 refers to 10:15 PM. | Works in conjunction with the `itdDate` value. If not specified, the current server time is used.  (optional) (default to 1200)
-            departure_monitor_macro = 'true' # str | Including this parameter enables a number of options that result in the departure monitor operating in the same way as the Transport for NSW Trip Planner web site. It is recommended this is enabled, along with the `TfNSWDM` parameter.  (optional) (default to true)
-            excluded_means = 'checkbox' # str | This parameter which means of transport to exclude from the departure monitor. To exclude one means, select one of the following: `1` = train, `2` = metro, `4` = light rail, `5` = bus, `7` = coach, `9` = ferry, `11` = school bus. `checkbox` allows you to exclude more than one means of transport when used in conjunction with the `exclMOT_<ID>` parameters.  (optional)
-            excl_mot_1 = '1' # str | Excludes train services from the departure monitor.  Must be used in conjunction with `excludedMeans=checkbox`  (optional)
-            excl_mot_2 = '2' # str | Excludes metro services from the departure monitor.  Must be used in conjunction with `excludedMeans=checkbox`  (optional)
-            excl_mot_4 = '4' # str | Excludes light rail services from the departure monitor.  Must be used in conjunction with `excludedMeans=checkbox`  (optional)
-            # excl_mot_5 = '5' # str | Excludes bus services from the departure monitor.  Must be used in conjunction with `excludedMeans=checkbox`  (optional)
-            excl_mot_7 = '7' # str | Excludes coach services from the departure monitor.  Must be used in conjunction with `excludedMeans=checkbox`  (optional)
-            excl_mot_9 = '9' # str | Excludes ferry services from the departure monitor.  Must be used in conjunction with `excludedMeans=checkbox`  (optional)
-            # excl_mot_11 = '11' # str | Excludes school bus services from the departure monitor.  Must be used in conjunction with `excludedMeans=checkbox`  (optional)
-            tf_nswdm = 'true' # str | Including this parameter enables a number of options that result in the departure monitor operating in the same way as the Transport for NSW Trip Planner web site, including enabling real-time data. It is recommended this is enabled, along with the `departureMonitorMacro` parameter.  (optional) (default to true)
-            version = '10.2.1.42' # str | Indicates which version of the API the caller is expecting for both request and response data. Note that if this version differs from the version listed above then the returned data may not be as expected.  (optional) (default to 10.2.1.42)
-
-            try:
-                # Provides capability to provide NSW public transport departure information from a stop, station or wharf including real-time.
-                api_response = api_instance.tfnsw_dm_request(output_format, coord_output_format, type_dm, name_dm, mode=mode, departure_monitor_macro=departure_monitor_macro, excluded_means=excluded_means, excl_mot_1=excl_mot_1, excl_mot_2=excl_mot_2, excl_mot_4=excl_mot_4, excl_mot_7=excl_mot_7, excl_mot_9=excl_mot_9, tf_nswdm=tf_nswdm, version=version)
-                api_dictionary = api_response.__dict__
-                #print(api_dictionary.keys()) --> dict_keys(['_error', '_locations', '_stop_events', '_version', 'discriminator'])
-                # Assuming api_response is the dictionary response
-                stop_events_data = api_dictionary['_stop_events']
+        def get_train_info(self, start_station, destination_station, departure_day, departure_time, no_of_trips):
+                
                 train_info = []
 
-                if stop_events_data is None:
-                      transportation_description = "None Found"
-                      route_name = "None Found"
-                      departure_time = "None Found"
-                      arrival_time = "None Found"
-                      
-                      train_info.append((transportation_description, route_name, departure_time, arrival_time))
+                def parse_api_response_to_dict(api_url, params, headers):
+                        try:
+                                # Make the request
+                                response = requests.get(api_url, params=params, headers=headers)
+                                
+                                # Check if the request was successful (status code 200)
+                                if response.status_code == 200:
+                                        # Parse the JSON response into a dictionary
+                                        data_dict = response.json()
+                                        return data_dict
+                                else:
+                                        print(f"Error: {response.status_code} - {response.text}")
+                                        return None
+                        except Exception as e:
+                                print(f"An error occurred: {e}")
+                                return None
 
-                else:
-                      for stop_event in stop_events_data:
-                            stop_event_dict = stop_event.__dict__
-                            departure_time = stop_event_dict['_departure_time_planned'][11:19]
-                            location = stop_event_dict['_location']
-                            location_name = location.name
-                            transportation = stop_event_dict['_transportation']
-                            transportation_description = transportation.description
-                            route_name = transportation.disassembled_name
-                            arrival_time = "Unknown"    
-                            
-                            train_info.append((transportation_description, route_name, departure_time, arrival_time))
+                # API endpoint
+                api_url = "https://api.transport.nsw.gov.au/v1/tp/trip"
 
-            except ApiException as e:
-                print("Exception when calling DefaultApi->tfnsw_dm_request: %s\n" % e)
+                # Parameters
+                params = {
+                        'outputFormat': 'rapidJSON',
+                        'coordOutputFormat': 'EPSG:4326',
+                        'depArrMacro': 'dep',
+                        'itdDate': departure_day,
+                        'itdTime': departure_time,
+                        'type_origin': 'any',
+                        'name_origin': start_station,
+                        'type_destination': 'any',
+                        'name_destination': destination_station,
+                        'calcNumberOfTrips': no_of_trips,
+                        'TfNSWTR': 'true',
+                        'version': '10.2.1.42',
+                        'itOptionsActive': '1',
+                        'cycleSpeed': '16'
+                }
 
-            return train_info
+                # Headers with your API key (replace 'YOUR_API_KEY' with your actual API key)
+                headers = {
+                        'Authorization': 'apikey eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJwMWpGZWhGZTB4cHJiT05OMWxsenBHYUN1UkNhN1VIMGxNNTl4UDZURkpzIiwiaWF0IjoxNzAzMTM4ODY4fQ.1pTAXxfPAJ64BzqxaRU9xnFPflsJ0niKPDC6BBmDpkk'
+                }
+
+                # Parse API response into dictionary
+                trip_info_dict = parse_api_response_to_dict(api_url, params, headers)
+                for journey in trip_info_dict["journeys"]:
+                        departure_time = journey["legs"][0]["origin"]["departureTimeEstimated"][11:19]
+                        route_name = journey["legs"][0]["transportation"]["description"]
+                        bus_no = journey["legs"][0]["transportation"]["disassembledName"]
+                        arrival_time = journey["legs"][0]["destination"]["arrivalTimeEstimated"][11:19]
+
+                        train_info.append(("Unknown", bus_no, departure_time, arrival_time))
+
+                return train_info
 
     if __name__ == "__main__":
         root = tk.Tk()
