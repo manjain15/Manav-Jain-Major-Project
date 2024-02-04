@@ -274,22 +274,27 @@ def main():
             train_screen = tk.Frame(self.master)
             train_screen.pack(padx=10, pady=10)
 
-            ctk.CTkLabel(train_screen, text=f"Buses from {start_station}").grid(row=0, column=0, columnspan=2, pady=10)
+            ctk.CTkLabel(train_screen, text=f"Trips from {start_station}").grid(row=0, column=0, columnspan=3, pady=10)
 
-            tree = ttk.Treeview(train_screen, columns=("Route", "Bus No.", "Departure", "Arrival"), show="headings")
-            tree.column("Route",anchor="center", width=200)
-            tree.heading("Route", text="Route")
-            tree.column("Bus No.",anchor="center", width=200)
-            tree.heading("Bus No.", text="Bus No.")
+            tree = ttk.Treeview(train_screen, columns=("Journey", "Departure", "Arrival"), show="headings")
+            tree.column("Journey",anchor="center", width=200)
+            tree.heading("Journey", text="Journey")
             tree.column("Departure",anchor="center", width=200)
             tree.heading("Departure", text="Departure")
             tree.column("Arrival",anchor="center", width=200)
             tree.heading("Arrival", text="Arrival")
-            tree.grid(row=1, column=0, columnspan=4, pady=10)
+            tree.grid(row=1, column=0, columnspan=3, pady=10)
 
             start_stop_id = stops[start_station][1:]
             destination_stop_id = stops[destination_station][1:]
-            train_info = self.get_train_info(start_stop_id, destination_stop_id, departure_day, departure_time, no_of_trips)
+            train_info, trip_info_dict = self.get_train_info(start_stop_id, destination_stop_id, departure_day, departure_time, no_of_trips)
+
+            def on_item_click(event):
+                item = tree.focus()  # Get the item that was clicked
+                values = tree.item(item, 'values')
+                self.show_detailed_journey_info_screen(trip_info_dict, values)
+
+            tree.bind("<ButtonRelease-1>", on_item_click)
 
             for train in train_info:
                 tree.insert("", "end", values=train)
@@ -342,22 +347,67 @@ def main():
                         'cycleSpeed': '16'
                 }
 
-                # Headers with your API key (replace 'YOUR_API_KEY' with your actual API key)
                 headers = {
                         'Authorization': 'apikey eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJwMWpGZWhGZTB4cHJiT05OMWxsenBHYUN1UkNhN1VIMGxNNTl4UDZURkpzIiwiaWF0IjoxNzAzMTM4ODY4fQ.1pTAXxfPAJ64BzqxaRU9xnFPflsJ0niKPDC6BBmDpkk'
                 }
 
                 # Parse API response into dictionary
                 trip_info_dict = parse_api_response_to_dict(api_url, params, headers)
+                journey_no = 0
                 for journey in trip_info_dict["journeys"]:
+                        journey_no += 1
                         departure_time = journey["legs"][0]["origin"]["departureTimeEstimated"][11:19]
-                        route_name = journey["legs"][0]["transportation"]["description"]
-                        bus_no = journey["legs"][0]["transportation"]["disassembledName"]
-                        arrival_time = journey["legs"][0]["destination"]["arrivalTimeEstimated"][11:19]
+                        arrival_time = journey["legs"][-1]["destination"]["arrivalTimeEstimated"][11:19]
 
-                        train_info.append(("Unknown", bus_no, departure_time, arrival_time))
+                        train_info.append((journey_no, departure_time, arrival_time))
 
-                return train_info
+                return train_info, trip_info_dict
+        
+        def show_detailed_journey_info_screen(self, trip_info_dict, treeview_values):
+            if self.current_screen:
+                self.current_screen.destroy()
+
+            detailed_journey_screen = tk.Frame(self.master)
+            detailed_journey_screen.pack(padx=10, pady=10)
+
+            tree = ttk.Treeview(detailed_journey_screen, columns=("Leg", "Bus No.", "Origin", "Departure", "Destination", "Arrival"), show="headings")
+            tree.column("Leg",anchor="center", width=200)
+            tree.heading("Leg", text="Leg")
+            tree.column("Bus No.",anchor="center", width=200)
+            tree.heading("Bus No.", text="Bus No.")
+            tree.column("Origin",anchor="center", width=200)
+            tree.heading("Origin", text="Origin")
+            tree.column("Departure",anchor="center", width=200)
+            tree.heading("Departure", text="Departure")
+            tree.column("Destination",anchor="center", width=200)
+            tree.heading("Destination", text="Destination")
+            tree.column("Arrival",anchor="center", width=200)
+            tree.heading("Arrival", text="Arrival")
+            tree.grid(row=1, column=0, columnspan=5, pady=10)
+
+            train_info = []
+            journey_index = int(treeview_values[0]) - 1
+            for key,val in trip_info_dict["journeys"][journey_index].items():
+                  if key == "legs":
+                        legs = val
+                        i = 0
+                        for leg in legs:
+                            i += 1
+                            bus_no = leg["transportation"].get("disassembledName")
+                            if bus_no is None:
+                                  bus_no = "N/A (Walking)"
+                            origin = leg["origin"]["name"]
+                            departure = leg["origin"]["departureTimeEstimated"][11:19]
+                            destination = leg["destination"]["name"]
+                            arrival = leg["destination"]["arrivalTimeEstimated"][11:19]
+
+                            train_info.append((i, bus_no, origin, departure, destination, arrival))
+            
+            for train in train_info:
+                tree.insert("", "end", values=train)
+
+            self.current_screen = detailed_journey_screen
+                          
 
     if __name__ == "__main__":
         root = tk.Tk()
