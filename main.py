@@ -12,8 +12,7 @@ from TransportNSW import TransportNSW
 tnsw = TransportNSW()
 
 # CODE FOR PARSING SYDNEYTRAINS API
-def get_gtfs_data(api_key):
-    api_url = 'https://api.transport.nsw.gov.au/v1/gtfs/schedule/buses'
+def get_gtfs_data(api_key, api_url):
     headers = {'Authorization': f'apikey {api_key}'}
     response = requests.get(api_url, headers=headers)
 
@@ -65,19 +64,24 @@ def parse_gtfs_data(data):
 
 def main():
     api_key = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJwMWpGZWhGZTB4cHJiT05OMWxsenBHYUN1UkNhN1VIMGxNNTl4UDZURkpzIiwiaWF0IjoxNzAzMTM4ODY4fQ.1pTAXxfPAJ64BzqxaRU9xnFPflsJ0niKPDC6BBmDpkk'
-    gtfs_data = get_gtfs_data(api_key)
-    parsed_data = parse_gtfs_data(gtfs_data)
+    bus_data = get_gtfs_data(api_key, 'https://api.transport.nsw.gov.au/v1/gtfs/schedule/buses')
+    train_data = get_gtfs_data(api_key, 'https://api.transport.nsw.gov.au/v1/gtfs/schedule/sydneytrains')
+    parsed_bus_data = parse_gtfs_data(bus_data)
+    parsed_train_data = parse_gtfs_data(train_data)
 
     counter = 0
-    stops = {}
+    bus_stops = {}
     while counter <= 37763:
-        for key, val in parsed_data["stops.txt"][counter].items():
+        for key, val in parsed_bus_data["stops.txt"][counter].items():
             if key == "stop_id":
                 stop_id = val
             if key == "stop_name":
                 stop_name = val
-                stops.update({stop_name:stop_id})
-        counter+=1         
+                bus_stops.update({stop_name:stop_id})
+        counter+=1  
+
+    counter1 = 0
+    train_stops = {}
 
     # START OF AUTOCOMPLETE COMBOBOX CODE
     tkinter_umlauts=['odiaeresis', 'adiaeresis', 'udiaeresis', 'Odiaeresis', 'Adiaeresis', 'Udiaeresis', 'ssharp']
@@ -237,14 +241,14 @@ def main():
 
             ctk.CTkLabel(selection_screen, text="Select Starting Stop:").grid(row=0, column=0, padx=10, pady=10)
 
-            start_stations = list(stops.keys())
+            start_stations = list(bus_stops.keys())
             start_station_combobox = AutocompleteCombobox(selection_screen)
             start_station_combobox.set_completion_list(start_stations)
             start_station_combobox.grid(row=0, column=1, padx=10, pady=10)
 
             ctk.CTkLabel(selection_screen, text="Select Destination Stop:").grid(row=1, column=0, padx=10, pady=10)
 
-            destination_stations = list(stops.keys())
+            destination_stations = list(bus_stops.keys())
             destination_combobox = AutocompleteCombobox(selection_screen)
             destination_combobox.set_completion_list(destination_stations)
             destination_combobox.grid(row=1, column=1, padx=10, pady=10)
@@ -285,14 +289,14 @@ def main():
             tree.heading("Arrival", text="Arrival")
             tree.grid(row=1, column=0, columnspan=3, pady=10)
 
-            start_stop_id = stops[start_station][1:]
-            destination_stop_id = stops[destination_station][1:]
+            start_stop_id = bus_stops[start_station][1:]
+            destination_stop_id = bus_stops[destination_station][1:]
             train_info, trip_info_dict = self.get_train_info(start_stop_id, destination_stop_id, departure_day, departure_time, no_of_trips)
 
             def on_item_click(event):
                 item = tree.focus()  # Get the item that was clicked
                 values = tree.item(item, 'values')
-                self.show_detailed_journey_info_screen(trip_info_dict, values)
+                self.show_detailed_journey_info_screen(trip_info_dict, values, start_station, destination_station, departure_day, departure_time, no_of_trips)
 
             tree.bind("<ButtonRelease-1>", on_item_click)
 
@@ -363,18 +367,18 @@ def main():
 
                 return train_info, trip_info_dict
         
-        def show_detailed_journey_info_screen(self, trip_info_dict, treeview_values):
+        def show_detailed_journey_info_screen(self, trip_info_dict, treeview_values, start_station, destination_station, departure_day, departure_time, no_of_trips):
             if self.current_screen:
                 self.current_screen.destroy()
 
             detailed_journey_screen = tk.Frame(self.master)
             detailed_journey_screen.pack(padx=10, pady=10)
 
-            tree = ttk.Treeview(detailed_journey_screen, columns=("Leg", "Bus No.", "Origin", "Departure", "Destination", "Arrival"), show="headings")
+            tree = ttk.Treeview(detailed_journey_screen, columns=("Leg", "Transport", "Origin", "Departure", "Destination", "Arrival"), show="headings")
             tree.column("Leg",anchor="center", width=200)
             tree.heading("Leg", text="Leg")
-            tree.column("Bus No.",anchor="center", width=200)
-            tree.heading("Bus No.", text="Bus No.")
+            tree.column("Transport",anchor="center", width=200)
+            tree.heading("Transport", text="Transport")
             tree.column("Origin",anchor="center", width=200)
             tree.heading("Origin", text="Origin")
             tree.column("Departure",anchor="center", width=200)
@@ -393,18 +397,23 @@ def main():
                         i = 0
                         for leg in legs:
                             i += 1
-                            bus_no = leg["transportation"].get("disassembledName")
-                            if bus_no is None:
-                                  bus_no = "N/A (Walking)"
+                            transport = leg["transportation"].get("disassembledName")
+                            if transport is None:
+                                  transport = "Walking"
+                            if transport == "M":
+                                  transport == "Metro"
                             origin = leg["origin"]["name"]
                             departure = leg["origin"]["departureTimeEstimated"][11:19]
                             destination = leg["destination"]["name"]
                             arrival = leg["destination"]["arrivalTimeEstimated"][11:19]
 
-                            train_info.append((i, bus_no, origin, departure, destination, arrival))
+                            train_info.append((i, transport, origin, departure, destination, arrival))
             
             for train in train_info:
                 tree.insert("", "end", values=train)
+
+            back_button = ctk.CTkButton(detailed_journey_screen, text="Back", command= lambda: self.show_train_screen(start_station, destination_station, departure_day, departure_time, no_of_trips))
+            back_button.grid(row=2, column=0, pady=10)        
 
             self.current_screen = detailed_journey_screen
                           
