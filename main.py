@@ -293,12 +293,7 @@ def main():
             destination_stop_id = bus_stops[destination_station][1:]
             train_info, trip_info_dict = self.get_train_info(start_stop_id, destination_stop_id, departure_day, departure_time, no_of_trips)
 
-            def on_item_click(event):
-                item = tree.focus()  # Get the item that was clicked
-                values = tree.item(item, 'values')
-                self.show_detailed_journey_info_screen(trip_info_dict, values, start_station, destination_station, departure_day, departure_time, no_of_trips)
-
-            tree.bind("<ButtonRelease-1>", on_item_click)
+            tree.bind("<ButtonRelease-1>", lambda event: self.show_detailed_journey_info_screen(trip_info_dict, start_station, destination_station, departure_day, departure_time, no_of_trips))
 
             for train in train_info:
                 tree.insert("", "end", values=train)
@@ -367,7 +362,7 @@ def main():
 
                 return train_info, trip_info_dict
         
-        def show_detailed_journey_info_screen(self, trip_info_dict, treeview_values, start_station, destination_station, departure_day, departure_time, no_of_trips):
+        def show_detailed_journey_info_screen(self, trip_info_dict, start_station, destination_station, departure_day, departure_time, no_of_trips):
             if self.current_screen:
                 self.current_screen.destroy()
 
@@ -390,7 +385,7 @@ def main():
             tree.grid(row=1, column=0, columnspan=5, pady=10)
 
             train_info = []
-            journey_index = int(treeview_values[0]) - 1
+            journey_index = 0
             for key,val in trip_info_dict["journeys"][journey_index].items():
                   if key == "legs":
                         legs = val
@@ -408,12 +403,11 @@ def main():
                             arrival = leg["destination"]["arrivalTimeEstimated"][11:19]
 
                             train_info.append((i, transport, origin, departure, destination, arrival))
+                  
+                  journey_index +=1
             
             for train in train_info:
-                tree.insert("", "end", values=train)
-
-            back_button = ctk.CTkButton(detailed_journey_screen, text="Back", command= lambda: self.show_train_screen(start_station, destination_station, departure_day, departure_time, no_of_trips))
-            back_button.grid(row=2, column=0, pady=10)        
+                tree.insert("", "end", values=train)   
 
             self.current_screen = detailed_journey_screen
                           
