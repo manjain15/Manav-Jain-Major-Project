@@ -1,5 +1,3 @@
-from pprint import pprint
-from datetime import date, datetime, timedelta
 import tkinter as tk
 from tkinter import ttk
 import customtkinter as ctk
@@ -19,7 +17,7 @@ def get_gtfs_data(api_key, api_url):
     if response.status_code == 200:
         content_type = response.headers.get('Content-Type')
 
-        if content_type and 'application/octet-stream' in content_type:
+        if content_type or 'application/octet-stream' in content_type:
             try:
                 with zipfile.ZipFile(io.BytesIO(response.content)) as zip_file:
                     return {file_name: zip_file.read(file_name).decode("utf-8") for file_name in zip_file.namelist()}
@@ -82,6 +80,16 @@ def main():
 
     counter1 = 0
     train_stops = {}
+    while counter1 <= 1214:
+        for key, val in parsed_train_data["stops.txt"][counter1].items():
+            if key == "stop_id":
+                station_id = val
+            if key == "stop_name":
+                station_name = val
+                train_stops.update({station_name:station_id})
+        counter1+=1
+
+    all_stops = bus_stops | train_stops
 
     # START OF AUTOCOMPLETE COMBOBOX CODE
     tkinter_umlauts=['odiaeresis', 'adiaeresis', 'udiaeresis', 'Odiaeresis', 'Adiaeresis', 'Udiaeresis', 'ssharp']
@@ -241,14 +249,14 @@ def main():
 
             ctk.CTkLabel(selection_screen, text="Select Starting Stop:").grid(row=0, column=0, padx=10, pady=10)
 
-            start_stations = list(bus_stops.keys())
+            start_stations = list(all_stops.keys())
             start_station_combobox = AutocompleteCombobox(selection_screen)
             start_station_combobox.set_completion_list(start_stations)
             start_station_combobox.grid(row=0, column=1, padx=10, pady=10)
 
             ctk.CTkLabel(selection_screen, text="Select Destination Stop:").grid(row=1, column=0, padx=10, pady=10)
 
-            destination_stations = list(bus_stops.keys())
+            destination_stations = list(all_stops.keys())
             destination_combobox = AutocompleteCombobox(selection_screen)
             destination_combobox.set_completion_list(destination_stations)
             destination_combobox.grid(row=1, column=1, padx=10, pady=10)
@@ -289,8 +297,8 @@ def main():
             tree.heading("Arrival", text="Arrival")
             tree.grid(row=1, column=0, columnspan=3, pady=10)
 
-            start_stop_id = bus_stops[start_station][1:]
-            destination_stop_id = bus_stops[destination_station][1:]
+            start_stop_id = all_stops[start_station][1:]
+            destination_stop_id = all_stops[destination_station][1:]
             train_info, trip_info_dict = self.get_train_info(start_stop_id, destination_stop_id, departure_day, departure_time, no_of_trips)
 
             def on_item_click(event):
@@ -393,7 +401,7 @@ def main():
             tree.grid(row=1, column=0, columnspan=5, pady=10)
 
             train_info = []
-            journey_index = int(treeview_values[0])
+            journey_index = int(treeview_values[0]) - 1
             for key,val in trip_info_dict["journeys"][journey_index].items():
                   if key == "legs":
                         legs = val
