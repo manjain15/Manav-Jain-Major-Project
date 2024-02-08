@@ -293,7 +293,15 @@ def main():
             destination_stop_id = bus_stops[destination_station][1:]
             train_info, trip_info_dict = self.get_train_info(start_stop_id, destination_stop_id, departure_day, departure_time, no_of_trips)
 
-            tree.bind("<ButtonRelease-1>", lambda event: self.show_detailed_journey_info_screen(trip_info_dict, start_station, destination_station, departure_day, departure_time, no_of_trips))
+            def on_item_click(event):
+                item_id = tree.focus()  # Get the ID of the clicked item
+                if item_id:  # Ensure that an item was clicked
+                        item_values = tree.item(item_id, "values")
+                
+                self.show_detailed_journey_info_screen(trip_info_dict, item_values, start_station, destination_station, departure_day, departure_time, no_of_trips)
+                
+
+            tree.bind("<ButtonRelease-1>", on_item_click)
 
             for train in train_info:
                 tree.insert("", "end", values=train)
@@ -362,7 +370,7 @@ def main():
 
                 return train_info, trip_info_dict
         
-        def show_detailed_journey_info_screen(self, trip_info_dict, start_station, destination_station, departure_day, departure_time, no_of_trips):
+        def show_detailed_journey_info_screen(self, trip_info_dict, treeview_values, start_station, destination_station, departure_day, departure_time, no_of_trips):
             if self.current_screen:
                 self.current_screen.destroy()
 
@@ -385,7 +393,7 @@ def main():
             tree.grid(row=1, column=0, columnspan=5, pady=10)
 
             train_info = []
-            journey_index = 0
+            journey_index = int(treeview_values[0])
             for key,val in trip_info_dict["journeys"][journey_index].items():
                   if key == "legs":
                         legs = val
