@@ -6,7 +6,11 @@ import requests
 import zipfile
 import io
 import re
-import sqlite3
+
+import redis
+# Connect to Redis
+r = redis.Redis(host='localhost', port=6379, db=0)
+
 from TransportNSW import TransportNSW
 tnsw = TransportNSW()
 
@@ -305,6 +309,7 @@ def main():
                 destination_stop_id = all_stops[destination_station][1:]
                 train_info, trip_info_dict = self.get_train_info(start_stop_id, destination_stop_id, departure_day, departure_time, no_of_trips)
 
+                # Handler for item click event
                 def on_item_click(event):
                         item_id = tree.focus()  # Get the ID of the clicked item
                         if item_id:  # Ensure that an item was clicked
