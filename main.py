@@ -11,7 +11,7 @@ import json
 from TransportNSW import TransportNSW
 tnsw = TransportNSW()
 
-redis_connection = redislite.Redis("Trips")
+redis_connection = redislite.Redis("/Users/manavjain/github-classroom/Baulkhamhills-hs/Manav-Jain-Major-Project/Trips")
 
 # CODE FOR PARSING SYDNEYTRAINS API
 def get_gtfs_data(api_key, api_url):
@@ -223,25 +223,28 @@ def main():
 
         # CODE FOR FIRST SCREEN
         def show_start_screen(self):
-            if self.current_screen:
-                self.current_screen.destroy()
+                if self.current_screen:
+                        self.current_screen.destroy()
 
-            start_screen = ctk.CTkFrame(self.master)
-            start_screen.pack(side="top", fill="both", expand=True)
+                start_screen = ctk.CTkFrame(self.master)
+                start_screen.pack(side="top", fill="both", expand=True)
 
-            heading = ctk.CTkLabel(master=start_screen, justify="center", text="ViewTrip", corner_radius=10, )
-            heading.pack(side="top", fill="x")
+                heading = ctk.CTkLabel(master=start_screen, justify="center", text="ViewTrip", corner_radius=10, )
+                heading.pack(side="top", fill="x")
 
-            add_new_trip = ctk.CTkButton(master=start_screen, text="+", command=lambda: self.show_selection_screen(), corner_radius=10)
-            add_new_trip.pack(side="bottom", fill="x")
+                add_new_trip = ctk.CTkButton(master=start_screen, text="+", command=lambda: self.show_selection_screen(), corner_radius=10)
+                add_new_trip.pack(side="bottom", fill="x")
 
-            welcome_label = ctk.CTkLabel(master=start_screen, text="Welcome to ViewTrip", bg_color="grey", corner_radius=10)
-            welcome_label.pack(pady=10)
+                display_saved_trips = ctk.CTkButton(master=start_screen, text="Display Trips", corner_radius=10, command=self.show_display_saved_trips_screen)
+                display_saved_trips.pack(side="bottom", fill="x", pady=10)
 
-            welcome_information = ctk.CTkLabel(master=start_screen, text="To get started, press the plus button to add a new trip.", bg_color="orange", corner_radius=10)
-            welcome_information.pack()
+                welcome_label = ctk.CTkLabel(master=start_screen, text="Welcome to ViewTrip", bg_color="grey", corner_radius=10)
+                welcome_label.pack(pady=10)
 
-            self.current_screen = start_screen
+                welcome_information = ctk.CTkLabel(master=start_screen, text="To get started, press the plus button to add a new trip.", bg_color="orange", corner_radius=10)
+                welcome_information.pack()
+
+                self.current_screen = start_screen
 
         # CODE FOR SECOND SCREEN
         def show_selection_screen(self):
@@ -435,11 +438,12 @@ def main():
                         tree.insert("", "end", values=train)
                 
                 def save_trip():
-                        trip_id = 1
+                        all_keys = redis_connection.keys("*")
+                        trip_id = f"{origin} to {destination}"
                         train_json = json.dumps(train_info)
-                        redis_connection.set(f"Trip: {trip_id}", train_json)
+                        redis_connection.set(trip_id, train_json)
                         print(redis_connection.get(trip_id))
-                        trip_id += 1
+                        self.show_start_screen()
 
                 # Back button to return to the previous screen
                 back_button = ctk.CTkButton(detailed_journey_screen, text="Back", command=lambda: self.show_train_screen(start_station, destination_station, departure_day, departure_time, no_of_trips))
@@ -449,6 +453,77 @@ def main():
                 save_trip_button.grid(row=2, column=2, pady=10, columnspan=2)
 
                 self.current_screen = detailed_journey_screen
+
+        def show_display_saved_trips_screen(self):
+                if self.current_screen:
+                        self.current_screen.destroy()
+
+                display_saved_trips_screen = tk.Frame(self.master)
+                display_saved_trips_screen.pack(padx=10, pady=10)
+
+                all_keys = redis_connection.keys()
+
+                if all_keys is None:
+                       ctk.CTkLabel(master=display_saved_trips_screen, text="Save a trip first").grid(row=0, column=2, columnspan=2, pady=10)
+                       ctk.CTkButton(master=display_saved_trips_screen, text="Go Back to Start Screen", command=self.show_start_screen).grid(row=1, column=2, columnspan=2, pady=10)
+
+                trips_tree = ttk.Treeview(display_saved_trips_screen, columns=("Trip"), show="headings")
+                trips_tree.column("Trip",anchor="center", width=400)
+                trips_tree.heading("Trip", text="Trip")
+                trips_tree.grid(row=1, column=0, columnspan=5, pady=10)
+
+                for key in all_keys:
+                       key_str = key.decode('utf-8')
+                       trips_tree.insert("", "end", text=key_str, values=(key_str,))
+                
+                # Handler for item click event
+                def on_item_click(event):
+                        item_id = trips_tree.focus()  # Get the ID of the clicked item
+                        if item_id:  # Ensure that an item was clicked
+                                item_values = trips_tree.item(item_id, "values")
+                                if item_values:
+                                       self.show_saved_trip_detailed_screen(item_values)
+
+                trips_tree.bind("<ButtonRelease-1>", on_item_click)
+                
+                back_button = ctk.CTkButton(master=display_saved_trips_screen, text="Back", command=self.show_start_screen)
+                back_button.grid(row=2, column=0, columnspan=2, pady=10)
+
+                self.current_screen = display_saved_trips_screen
+        
+        def show_saved_trip_detailed_screen(self, treeview_values):
+                if self.current_screen:
+                        self.current_screen.destroy()
+
+                saved_trip_detailed_screen = tk.Frame(self.master)
+                saved_trip_detailed_screen.pack(padx=10, pady=10)
+
+                detailed_trips_tree = ttk.Treeview(saved_trip_detailed_screen, columns=("Leg", "Transport", "Origin", "Departure", "Destination", "Arrival"), show="headings")
+                detailed_trips_tree.column("Leg",anchor="center", width=200)
+                detailed_trips_tree.heading("Leg", text="Leg")
+                detailed_trips_tree.column("Transport",anchor="center", width=200)
+                detailed_trips_tree.heading("Transport", text="Transport")
+                detailed_trips_tree.column("Origin",anchor="center", width=200)
+                detailed_trips_tree.heading("Origin", text="Origin")
+                detailed_trips_tree.column("Departure",anchor="center", width=200)
+                detailed_trips_tree.heading("Departure", text="Departure")
+                detailed_trips_tree.column("Destination",anchor="center", width=200)
+                detailed_trips_tree.heading("Destination", text="Destination")
+                detailed_trips_tree.column("Arrival",anchor="center", width=200)
+                detailed_trips_tree.heading("Arrival", text="Arrival")
+                detailed_trips_tree.grid(row=1, column=0, columnspan=5, pady=10)
+
+                desired_value = redis_connection.get(treeview_values[0])
+                decoded_desired_value = desired_value.decode("utf-8")
+                list_of_desired_values = json.loads(decoded_desired_value)
+
+                for value in list_of_desired_values:
+                       detailed_trips_tree.insert("", "end", values=value)
+                
+                back_button = ctk.CTkButton(master=saved_trip_detailed_screen, text="Back", command=self.show_display_saved_trips_screen)
+                back_button.grid(row=2, column=0, columnspan=2, pady=10)
+
+                self.current_screen = saved_trip_detailed_screen
 
 
     if __name__ == "__main__":
