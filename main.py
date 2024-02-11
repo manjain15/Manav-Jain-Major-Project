@@ -6,13 +6,12 @@ import requests
 import zipfile
 import io
 import re
-
-import redis
-# Connect to Redis
-r = redis.Redis(host='localhost', port=6379, db=0)
-
+import redislite
+import json
 from TransportNSW import TransportNSW
 tnsw = TransportNSW()
+
+redis_connection = redislite.Redis("Trips")
 
 # CODE FOR PARSING SYDNEYTRAINS API
 def get_gtfs_data(api_key, api_url):
@@ -214,14 +213,14 @@ def main():
     # START OF GUI CODE
     class ViewTrip:
         def __init__(self, master):
-            self.master = master
-            self.master.title("ViewTrip")
+                self.master = master
+                self.master.title("ViewTrip")
 
-            self.current_screen = None
+                self.current_screen = None
 
-            # Start Screen
-            self.show_start_screen()
-        
+                # Start Screen
+                self.show_start_screen()
+
         # CODE FOR FIRST SCREEN
         def show_start_screen(self):
             if self.current_screen:
@@ -246,45 +245,45 @@ def main():
 
         # CODE FOR SECOND SCREEN
         def show_selection_screen(self):
-            if self.current_screen:
-                self.current_screen.destroy()
+                if self.current_screen:
+                        self.current_screen.destroy()
 
-            selection_screen = ctk.CTkFrame(self.master)
-            selection_screen.pack(padx=10, pady=10)
+                selection_screen = ctk.CTkFrame(self.master)
+                selection_screen.pack(padx=10, pady=10)
 
-            ctk.CTkLabel(selection_screen, text="Select Starting Stop:").grid(row=0, column=0, padx=10, pady=10)
+                ctk.CTkLabel(selection_screen, text="Select Starting Stop:").grid(row=0, column=0, padx=10, pady=10)
 
-            start_stations = list(all_stops.keys())
-            start_station_combobox = AutocompleteCombobox(selection_screen)
-            start_station_combobox.set_completion_list(start_stations)
-            start_station_combobox.grid(row=0, column=1, padx=10, pady=10)
+                start_stations = list(all_stops.keys())
+                start_station_combobox = AutocompleteCombobox(selection_screen)
+                start_station_combobox.set_completion_list(start_stations)
+                start_station_combobox.grid(row=0, column=1, padx=10, pady=10)
 
-            ctk.CTkLabel(selection_screen, text="Select Destination Stop:").grid(row=1, column=0, padx=10, pady=10)
+                ctk.CTkLabel(selection_screen, text="Select Destination Stop:").grid(row=1, column=0, padx=10, pady=10)
 
-            destination_stations = list(all_stops.keys())
-            destination_combobox = AutocompleteCombobox(selection_screen)
-            destination_combobox.set_completion_list(destination_stations)
-            destination_combobox.grid(row=1, column=1, padx=10, pady=10)
+                destination_stations = list(all_stops.keys())
+                destination_combobox = AutocompleteCombobox(selection_screen)
+                destination_combobox.set_completion_list(destination_stations)
+                destination_combobox.grid(row=1, column=1, padx=10, pady=10)
 
-            ctk.CTkLabel(selection_screen, text="What day would you like to depart?").grid(row=2, column=0, padx=10, pady=10)
-            departure_day_entry = ctk.CTkEntry(selection_screen, placeholder_text="YYYYMMDD")
-            departure_day_entry.grid(row=2, column=1, padx=10, pady=10)
+                ctk.CTkLabel(selection_screen, text="What day would you like to depart?").grid(row=2, column=0, padx=10, pady=10)
+                departure_day_entry = ctk.CTkEntry(selection_screen, placeholder_text="YYYYMMDD")
+                departure_day_entry.grid(row=2, column=1, padx=10, pady=10)
 
-            ctk.CTkLabel(selection_screen, text="What time would you like to depart?").grid(row=3, column=0, padx=10, pady=10)
-            departure_time_entry = ctk.CTkEntry(selection_screen, placeholder_text="HHDD (24 Hour Time)")
-            departure_time_entry.grid(row=3, column=1, padx=10, pady=10)
+                ctk.CTkLabel(selection_screen, text="What time would you like to depart?").grid(row=3, column=0, padx=10, pady=10)
+                departure_time_entry = ctk.CTkEntry(selection_screen, placeholder_text="HHDD (24 Hour Time)")
+                departure_time_entry.grid(row=3, column=1, padx=10, pady=10)
 
-            ctk.CTkLabel(selection_screen, text="How many trip options would you like?").grid(row=4, column=0, padx=10, pady=10)
-            no_of_trips_entry = ctk.CTkEntry(selection_screen, placeholder_text="Enter a number greater than or equal to 1")
-            no_of_trips_entry.grid(row=4, column=1, padx=10, pady=10)
+                ctk.CTkLabel(selection_screen, text="How many trip options would you like?").grid(row=4, column=0, padx=10, pady=10)
+                no_of_trips_entry = ctk.CTkEntry(selection_screen, placeholder_text="Enter a number greater than or equal to 1")
+                no_of_trips_entry.grid(row=4, column=1, padx=10, pady=10)
 
-            show_trains_button = ctk.CTkButton(selection_screen, text="Next", command=lambda: self.show_train_screen(start_station_combobox.get(), destination_combobox.get(), departure_day_entry.get(), departure_time_entry.get(), no_of_trips_entry.get()))
-            show_trains_button.grid(row=5, column=0, columnspan=2, pady=10)
+                show_trains_button = ctk.CTkButton(selection_screen, text="Next", command=lambda: self.show_train_screen(start_station_combobox.get(), destination_combobox.get(), departure_day_entry.get(), departure_time_entry.get(), no_of_trips_entry.get()))
+                show_trains_button.grid(row=5, column=0, columnspan=2, pady=10)
 
-            back_button = ctk.CTkButton(selection_screen, text="Back", command=self.show_start_screen)
-            back_button.grid(row=6, column=0, columnspan=2, pady=10)
+                back_button = ctk.CTkButton(selection_screen, text="Back", command=self.show_start_screen)
+                back_button.grid(row=6, column=0, columnspan=2, pady=10)
 
-            self.current_screen = selection_screen
+                self.current_screen = selection_screen
 
         # CODE FOR THIRD SCREEN
         def show_train_screen(self, start_station, destination_station, departure_day, departure_time, no_of_trips):
@@ -431,13 +430,23 @@ def main():
                                         train_info.append((i, transport, origin, departure, destination, arrival))
 
                                 journey_index +=1
-                        
+        
                 for train in train_info:
                         tree.insert("", "end", values=train)
+                
+                def save_trip():
+                        trip_id = 1
+                        train_json = json.dumps(train_info)
+                        redis_connection.set(f"Trip: {trip_id}", train_json)
+                        print(redis_connection.get(trip_id))
+                        trip_id += 1
 
                 # Back button to return to the previous screen
                 back_button = ctk.CTkButton(detailed_journey_screen, text="Back", command=lambda: self.show_train_screen(start_station, destination_station, departure_day, departure_time, no_of_trips))
-                back_button.grid(row=2, column=0, pady=10)
+                back_button.grid(row=2, column=0, pady=10, columnspan=2)
+
+                save_trip_button = ctk.CTkButton(detailed_journey_screen, text="Save Trip", command=save_trip)
+                save_trip_button.grid(row=2, column=2, pady=10, columnspan=2)
 
                 self.current_screen = detailed_journey_screen
 
