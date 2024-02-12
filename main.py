@@ -73,7 +73,7 @@ def main():
 
     counter = 0
     bus_stops = {}
-    while counter <= 37763:
+    while counter <= 37758:
         for key, val in parsed_bus_data["stops.txt"][counter].items():
             if key == "stop_id":
                 stop_id = val
@@ -442,7 +442,6 @@ def main():
                         trip_id = f"{origin} to {destination}"
                         train_json = json.dumps(train_info)
                         redis_connection.set(trip_id, train_json)
-                        print(redis_connection.get(trip_id))
                         self.show_start_screen()
 
                 # Back button to return to the previous screen
