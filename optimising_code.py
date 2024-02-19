@@ -10,10 +10,6 @@ import redislite
 import json
 import pygame.mixer
 pygame.mixer.init()
-from customtkinter import CTk
-from customtkinter import CTkFrame
-from customtkinter import CTkButton
-from customtkinter import CTkLabel
 from TransportNSW import TransportNSW
 tnsw = TransportNSW()
 
@@ -237,7 +233,7 @@ def main():
                     if self.current_screen:
                         self.current_screen.destroy()
 
-                    start_screen = ctk.CTkFrame(self.master, fg_color="#000000")
+                    start_screen = ctk.CTkFrame(self.master)
                     start_screen.pack(side="top", fill="both", expand=True)
 
                     heading = ctk.CTkLabel(master=start_screen, justify="center", text="ViewTrip")
@@ -263,7 +259,7 @@ def main():
                                 self.current_screen.destroy()
 
                         selection_screen = ctk.CTkFrame(self.master)
-                        selection_screen.pack(padx=10, pady=10)
+                        selection_screen.pack(side="top", fill="both", expand=True)
 
                         ctk.CTkLabel(selection_screen, text="Select Starting Stop:").grid(row=0, column=0, padx=10, pady=10)
 
@@ -281,15 +277,15 @@ def main():
 
                         ctk.CTkLabel(selection_screen, text="What day would you like to depart?").grid(row=2, column=0, padx=10, pady=10)
                         departure_day_entry = ctk.CTkEntry(selection_screen, placeholder_text="YYYYMMDD")
-                        departure_day_entry.grid(row=2, column=1, padx=10, pady=10)
+                        departure_day_entry.grid(row=2, column=1, padx=10, pady=10, columnspan=8)
 
                         ctk.CTkLabel(selection_screen, text="What time would you like to depart?").grid(row=3, column=0, padx=10, pady=10)
                         departure_time_entry = ctk.CTkEntry(selection_screen, placeholder_text="HHDD (24 Hour Time)")
-                        departure_time_entry.grid(row=3, column=1, padx=10, pady=10)
+                        departure_time_entry.grid(row=3, column=1, padx=10, pady=10, columnspan=8)
 
                         ctk.CTkLabel(selection_screen, text="How many trip options would you like?").grid(row=4, column=0, padx=10, pady=10)
                         no_of_trips_entry = ctk.CTkEntry(selection_screen, placeholder_text="Enter a number greater than or equal to 1")
-                        no_of_trips_entry.grid(row=4, column=1, padx=10, pady=10)
+                        no_of_trips_entry.grid(row=4, column=1, padx=10, pady=10, columnspan=8)
 
                         show_trains_button = ctk.CTkButton(selection_screen, text="Next", command=lambda: self.show_train_screen(start_station_combobox.get(), destination_combobox.get(), departure_day_entry.get(), departure_time_entry.get(), no_of_trips_entry.get()))
                         show_trains_button.grid(row=5, column=0, columnspan=2, pady=10)
@@ -307,16 +303,6 @@ def main():
 
                         train_screen = tk.Frame(self.master)
                         train_screen.pack(padx=10, pady=10)
-
-                        try:
-                            start_stop_id = all_stops[start_station][1:]
-                            destination_stop_id = all_stops[destination_station][1:]
-                            train_info, trip_info_dict = self.get_train_info(start_stop_id, destination_stop_id, departure_day, departure_time, no_of_trips)
-                        
-                        except KeyError as e:
-                            ctk.CTkLabel(train_screen, text="Please fill in all fields").grid(row=0, column=0, columnspan=3, pady=10)
-                            self.current_screen.destroy()
-                            self.show_selection_screen()
 
                         ctk.CTkLabel(train_screen, text=f"Trips from {start_station}").grid(row=0, column=0, columnspan=3, pady=10)
 
@@ -339,6 +325,10 @@ def main():
 
 
                         tree.bind("<ButtonRelease-1>", on_item_click)
+
+                        start_stop_id = all_stops[start_station][1:]
+                        destination_stop_id = all_stops[destination_station][1:]
+                        train_info, trip_info_dict = self.get_train_info(start_stop_id, destination_stop_id, departure_day, departure_time, no_of_trips)
 
                         for train in train_info:
                                 tree.insert("", "end", values=train)
