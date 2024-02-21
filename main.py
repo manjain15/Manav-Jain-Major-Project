@@ -8,6 +8,7 @@ import io
 import re
 import redislite
 import json
+import time
 import pygame.mixer
 pygame.mixer.init()
 from TransportNSW import TransportNSW
@@ -279,11 +280,34 @@ def main():
                         no_of_trips_entry = ctk.CTkEntry(selection_screen, placeholder_text="Enter a number greater than or equal to 1")
                         no_of_trips_entry.grid(row=4, column=1, padx=10, pady=10, columnspan=8)
 
-                        show_trains_button = ctk.CTkButton(selection_screen, text="Next", command=lambda: self.show_train_screen(start_station_combobox.get(), destination_combobox.get(), departure_day_entry.get(), departure_time_entry.get(), no_of_trips_entry.get()))
-                        show_trains_button.grid(row=5, column=0, columnspan=2, pady=10)
+                        def check_validity():
+                                origin_valid = False
+                                destination_valid = False
+
+                                origin_text = start_station_combobox.get()
+                                destination_text = destination_combobox.get()
+                                departure_day_text = departure_day_entry.get()
+                                departure_time_text = departure_time_entry.get()
+                                no_of_trips_text = no_of_trips_entry.get()
+
+                                if origin_text and destination_text and departure_day_text and departure_time_text and no_of_trips_text:
+                                        if origin_text in start_stations and destination_text in destination_stations:
+                                                origin_valid = True
+                                                destination_valid = True
+
+                                if origin_valid and destination_valid:
+                                        self.show_train_screen(start_station_combobox.get(), destination_combobox.get(), departure_day_entry.get(), departure_time_entry.get(), no_of_trips_entry.get())
+                                        selection_screen.destroy()
+                                else:
+                                        error_label = ctk.CTkLabel(selection_screen, text="Please enter valid fields.")
+                                        error_label.grid(row=5, column=0, columnspan=2, pady=5)
+                                        self.show_selection_screen()
 
                         back_button = ctk.CTkButton(selection_screen, text="Back", command=self.show_start_screen)
                         back_button.grid(row=6, column=0, columnspan=2, pady=10)
+
+                        check_button = ctk.CTkButton(selection_screen, text="Check Values", command=check_validity)
+                        check_button.grid(row=5, column=0, columnspan=2, pady=10)
 
                         self.current_screen = selection_screen
 
