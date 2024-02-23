@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 import customtkinter as ctk
 from CTkListbox import *
 import requests
@@ -238,8 +239,7 @@ def main():
                                         self.show_train_screen(start_station_combobox.get(), destination_combobox.get(), departure_day_entry.get(), departure_time_entry.get(), no_of_trips_entry.get())
                                         selection_screen.destroy()
                                 else:
-                                        error_label = ctk.CTkLabel(selection_screen, text="Please enter valid fields.")
-                                        error_label.grid(row=5, column=0, columnspan=2, pady=5)
+                                        messagebox.showerror('INVALID INPUT', 'Error: Please enter valid inputs for all fields!')
                                         self.show_selection_screen()
 
                         back_button = ctk.CTkButton(selection_screen, text="Back", command=self.show_start_screen)
