@@ -9,7 +9,7 @@ import io
 import re
 import redislite
 import json
-import time
+import datetime
 import pygame.mixer
 pygame.mixer.init()
 from TransportNSW import TransportNSW
@@ -223,6 +223,9 @@ def main():
                         def check_validity():
                                 origin_valid = False
                                 destination_valid = False
+                                departure_date = False
+                                departure_time = False
+                                no_of_trips = False
 
                                 origin_text = start_station_combobox.get()
                                 destination_text = destination_combobox.get()
@@ -231,16 +234,46 @@ def main():
                                 no_of_trips_text = no_of_trips_entry.get()
 
                                 if origin_text and destination_text and departure_day_text and departure_time_text and no_of_trips_text:
-                                        if origin_text in start_stations and destination_text in destination_stations:
-                                                origin_valid = True
-                                                destination_valid = True
+                                        if origin_text not in start_stations or destination_text not in destination_stations:
+                                                origin_valid = False
+                                                destination_valid = False
+                                                messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid origin or destination!')
+                                                self.show_selection_screen()
+                                        
+                                        elif int(no_of_trips_text) >= 1:
+                                               no_of_trips = True
 
-                                if origin_valid and destination_valid:
-                                        self.show_train_screen(start_station_combobox.get(), destination_combobox.get(), departure_day_entry.get(), departure_time_entry.get(), no_of_trips_entry.get())
-                                        selection_screen.destroy()
+                                        else:
+                                                try:
+                                                        datetime.datetime.strptime(departure_day_text, '%Y%m%d')
+                                                        departure_date = True
+
+                                                except ValueError:
+                                                        departure_date = False
+                                                        messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid date format!')
+                                                        self.show_selection_screen()
+
+                                                try:
+                                                        datetime.datetime.strptime(departure_time_text, '%H%M')
+                                                        departure_time = True
+        
+                                                except ValueError:
+                                                        departure_time = False
+                                                        messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid time format!')
+                                                        self.show_selection_screen()
+                                                        
                                 else:
-                                        messagebox.showerror('INVALID INPUT', 'Error: Please enter valid inputs for all fields!')
-                                        self.show_selection_screen()
+                                       origin_valid = False
+                                       destination_valid = False
+                                       departure_date = False
+                                       departure_time = False
+                                       no_of_trips = False
+                                       messagebox.showerror('INVALID INPUT', 'Error: Please enter valid input for all fields!')
+                                       self.show_selection_screen()
+
+                                if origin_valid and destination_valid and departure_date and departure_time and no_of_trips:
+                                        self.show_train_screen(start_station_combobox.get(), destination_combobox.get(), departure_day_entry.get(), departure_time_entry.get(), int(no_of_trips_entry.get()))
+                                        selection_screen.destroy()
 
                         back_button = ctk.CTkButton(selection_screen, text="Back", command=self.show_start_screen)
                         back_button.grid(row=6, column=0, columnspan=2, pady=10)
