@@ -223,9 +223,9 @@ def main():
                         def check_validity():
                                 origin_valid = False
                                 destination_valid = False
-                                departure_date = False
-                                departure_time = False
-                                no_of_trips = False
+                                departure_date_valid = False
+                                departure_time_valid = False
+                                no_of_trips_valid = False
 
                                 origin_text = start_station_combobox.get()
                                 destination_text = destination_combobox.get()
@@ -234,51 +234,55 @@ def main():
                                 no_of_trips_text = no_of_trips_entry.get()
 
                                 if origin_text and destination_text and departure_day_text and departure_time_text and no_of_trips_text:
-                                        if origin_text not in start_stations or destination_text not in destination_stations:
+                                        if origin_text not in start_stations:
                                                 origin_valid = False
+                                                messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid origin!')
+                                                self.show_selection_screen()
+                                        elif destination_text not in destination_stations:
                                                 destination_valid = False
-                                                messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid origin or destination!')
+                                                messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid destination!')
                                                 self.show_selection_screen()
                                         
-                                        elif int(no_of_trips_text) >= 1:
-                                               no_of_trips = True
+                                        elif int(no_of_trips_text) < 1:
+                                                no_of_trips_valid = False
+                                                messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid number of trips!')
+                                                self.show_selection_screen()
 
                                         else:
+                                                origin_valid = True
+                                                destination_valid = True
+                                                no_of_trips_valid = True
+
                                                 try:
                                                         datetime.datetime.strptime(departure_day_text, '%Y%m%d')
-                                                        departure_date = True
+                                                        departure_date_valid = True
 
                                                 except ValueError:
-                                                        departure_date = False
+                                                        departure_date_valid = False
                                                         messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid date format!')
                                                         self.show_selection_screen()
 
                                                 try:
                                                         datetime.datetime.strptime(departure_time_text, '%H%M')
-                                                        departure_time = True
-        
+                                                        departure_time_valid = True
+
                                                 except ValueError:
-                                                        departure_time = False
+                                                        departure_time_valid = False
                                                         messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid time format!')
                                                         self.show_selection_screen()
                                                         
                                 else:
-                                       origin_valid = False
-                                       destination_valid = False
-                                       departure_date = False
-                                       departure_time = False
-                                       no_of_trips = False
-                                       messagebox.showerror('INVALID INPUT', 'Error: Please enter valid input for all fields!')
-                                       self.show_selection_screen()
+                                        messagebox.showerror('INVALID INPUT', 'Error: Please enter valid input for all fields!')
+                                        self.show_selection_screen()
 
-                                if origin_valid and destination_valid and departure_date and departure_time and no_of_trips:
+                                if origin_valid and destination_valid and departure_date_valid and departure_time_valid and no_of_trips_valid:
                                         self.show_train_screen(start_station_combobox.get(), destination_combobox.get(), departure_day_entry.get(), departure_time_entry.get(), int(no_of_trips_entry.get()))
                                         selection_screen.destroy()
 
                         back_button = ctk.CTkButton(selection_screen, text="Back", command=self.show_start_screen)
                         back_button.grid(row=6, column=0, columnspan=2, pady=10)
 
-                        check_button = ctk.CTkButton(selection_screen, text="Check Values", command=check_validity)
+                        check_button = ctk.CTkButton(selection_screen, text="Next", command=check_validity)
                         check_button.grid(row=5, column=0, columnspan=2, pady=10)
 
                         self.current_screen = selection_screen
