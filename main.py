@@ -154,7 +154,7 @@ def main():
                 def __init__(self, master):
                         self.master = master
                         self.master.title("ViewTrip")
-                        ctk.set_default_color_theme("purple-pink.json")
+                        ctk.set_default_color_theme("black-gold.json")
 
                         self.current_screen = None
 
