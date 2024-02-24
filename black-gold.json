@@ -14,23 +14,25 @@
     },
     "CTkButton": {
       "corner_radius": 6,
-      "border_width": 0,
+      "border_width": 1,
       "fg_color": "#000000",
       "hover_color": "gray",
-      "border_color": ["#3E454A", "#949A9F"],
+      "border_color": "#FFDF00",
       "text_color": "#FFDF00",
       "text_color_disabled": ["gray74", "gray60"]
     },
     "CTkLabel": {
-      "corner_radius": 10,
+      "corner_radius": 6,
       "fg_color": "#000000",
+      "border_width": 1,
+      "border_color": "#FFDF00",
       "text_color": "#FFDF00"
     },
     "CTkEntry": {
       "corner_radius": 6,
       "border_width": 2,
       "fg_color": ["#F9F9FA", "#343638"],
-      "border_color": "#000000",
+      "border_color": "#FFDF00",
       "text_color": ["gray14", "gray84"],
       "placeholder_text_color": ["gray52", "gray62"]
     },
