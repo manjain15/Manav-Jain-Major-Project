@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter.constants import *
+from typing import List
 from tkinter import messagebox
 import customtkinter as ctk
 from CTkListbox import *
@@ -101,21 +103,25 @@ def main():
 
         # START OF AUTOCOMPLETE COMBOBOX CODE
         class AutocompleteCombobox(ttk.Combobox):
+
                 def __init__(self, *args, **kwargs):
+                        """Initialize the AutocompleteCombobox widget."""
                         super().__init__(*args, **kwargs)
                         self.set_completion_list([])
                         self.bind('<KeyRelease>', self.handle_keyrelease)
 
-                def set_completion_list(self, completion_list):
+                def set_completion_list(self, completion_list: List[str]) -> None:
+                        """Set the completion list for autocompletion."""
                         self._completion_list = sorted(completion_list, key=str.lower)
                         self._hits = []
                         self._hit_index = 0
                         self.position = 0
                         self['values'] = self._completion_list
 
-                def autocomplete(self, delta=0):
+                def autocomplete(self, delta: int = 0) -> None:
+                        """Perform autocompletion based on the current input."""
                         if delta:
-                                self.delete(self.position, tk.END)
+                                self.delete(self.position, END)
                         else:
                                 self.position = len(self.get())
                         _hits = []
@@ -126,22 +132,23 @@ def main():
                                 self._hit_index = 0
                                 self._hits = _hits
                         if self._hits:
-                                self.delete(0, tk.END)
+                                self.delete(0, END)
                                 self.insert(0, self._hits[self._hit_index])
-                                self.select_range(self.position, tk.END)
+                                self.select_range(self.position, END)
 
-                def handle_keyrelease(self, event):
+                def handle_keyrelease(self, event: tk.Event) -> None:
+                        """Handle key release events and perform autocompletion."""
                         if event.keysym == "BackSpace":
-                                self.delete(self.index(tk.INSERT), tk.END)
-                                self.position = self.index(tk.END)
+                                self.delete(self.index(INSERT), END)
+                                self.position = self.index(END)
                         elif event.keysym == "Left":
-                                if self.position < self.index(tk.END):
-                                        self.delete(self.position, tk.END)
+                                if self.position < self.index(END):
+                                        self.delete(self.position, END)
                                 else:
-                                        self.position = self.position - 1
-                                        self.delete(self.position, tk.END)
+                                        self.position -= 1
+                                        self.delete(self.position, END)
                         elif event.keysym == "Right":
-                                self.position = self.index(tk.END)
+                                self.position = self.index(END)
                         elif len(event.keysym) == 1:
                                 self.autocomplete()
 
