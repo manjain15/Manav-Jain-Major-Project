@@ -12,6 +12,7 @@ import re
 import redislite
 import json
 import datetime
+from PIL import Image
 import pygame.mixer
 pygame.mixer.init()
 from TransportNSW import TransportNSW
@@ -170,28 +171,32 @@ def main():
 
                 # CODE FOR FIRST SCREEN
                 def show_start_screen(self):
-                    if self.current_screen:
-                        self.current_screen.destroy()
+                        if self.current_screen:
+                                self.current_screen.destroy()
 
-                    start_screen = ctk.CTkFrame(self.master)
-                    start_screen.pack(side="top", fill="both", expand=True)
+                        start_screen = ctk.CTkFrame(self.master)
+                        start_screen.pack(side="top", fill="both", expand=True)
 
-                    heading = ctk.CTkLabel(master=start_screen, justify="center", text="ViewTrip")
-                    heading.pack(side="top", fill="x", pady=10)
+                        heading = ctk.CTkLabel(master=start_screen, justify="center", text="ViewTrip", font=("Helvetica", 20, "bold"))
+                        heading.pack(side="top", fill="x", pady=10)
 
-                    add_new_trip = ctk.CTkButton(master=start_screen, text="+", command=lambda: self.show_selection_screen())
-                    add_new_trip.pack(side="bottom", fill="x", pady=10)
+                        welcome_label = ctk.CTkLabel(master=start_screen, text="Welcome to ViewTrip", font=("Helvetica", 18, "underline"))
+                        welcome_label.pack(pady=10)
 
-                    display_saved_trips = ctk.CTkButton(master=start_screen, text="Display Trips", command=self.show_display_saved_trips_screen)
-                    display_saved_trips.pack(side="bottom", fill="x", pady=10)
+                        welcome_information = ctk.CTkLabel(master=start_screen, text="To get started, press the plus button to add a new trip.", font=("Helvetica", 16, "italic"))
+                        welcome_information.pack(pady=10)
 
-                    welcome_label = ctk.CTkLabel(master=start_screen, text="Welcome to ViewTrip")
-                    welcome_label.pack(pady=10)
+                        my_image = ctk.CTkImage(light_image=Image.open('start_screen_logo.png'), dark_image=Image.open('start_screen_logo.png'), size=(200, 100))
+                        image_label = ctk.CTkLabel(start_screen, text="", image=my_image)
+                        image_label.pack(pady=10)
 
-                    welcome_information = ctk.CTkLabel(master=start_screen, text="To get started, press the plus button to add a new trip.")
-                    welcome_information.pack(pady=10)
+                        display_saved_trips = ctk.CTkButton(master=start_screen, text="Display Trips", command=self.show_display_saved_trips_screen)
+                        display_saved_trips.pack(side="bottom", fill="x", pady=10)
 
-                    self.current_screen = start_screen
+                        add_new_trip = ctk.CTkButton(master=start_screen, text="+", command=lambda: self.show_selection_screen())
+                        add_new_trip.pack(side="bottom", fill="x", pady=10)
+
+                        self.current_screen = start_screen
 
                 # CODE FOR SECOND SCREEN
                 def show_selection_screen(self):
