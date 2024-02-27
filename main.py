@@ -13,6 +13,8 @@ import redislite
 import json
 import datetime
 from PIL import Image
+import folium
+from folium import plugins
 import pygame.mixer
 pygame.mixer.init()
 from TransportNSW import TransportNSW
@@ -424,7 +426,35 @@ def main():
                         tree.grid(row=1, column=0, columnspan=5, pady=10)
 
                         train_info = []
+                        coords = {}
                         journey_index = int(treeview_values[0]) - 1
+                        for leg in trip_info_dict["journeys"][journey_index]["legs"]:
+                                for key,val in leg.items():
+                                        if key == "stopSequence":
+                                                stops = val
+                                                for stop in stops:
+                                                        stop_name = stop["name"]
+                                                        coord = stop["coord"]
+                                                        coords.update({stop_name:coord})
+                        
+                        # Create a map centered at the mean latitude and longitude of the coordinates
+                        map_center = [sum(coord[0] for coord in coords.values()) / len(coords.values()),
+                                sum(coord[1] for coord in coords.values()) / len(coords.values())]
+
+                        # Create the map
+                        m = folium.Map(location=map_center, zoom_start=4)
+
+                        # Add markers for each coordinate
+                        for name, coord in coords.items():
+                                folium.Marker(location=coord, popup=name).add_to(m)
+
+                        # Create an AntPath to represent the transport route
+                        ant_path = plugins.AntPath(locations=coords.values(), color='blue')
+                        m.add_child(ant_path)
+
+                        # Save the map to an HTML file
+                        m.save('map_with_coordinates.html')
+
                         for key,val in trip_info_dict["journeys"][journey_index].items():
                                 if key == "legs":
                                         legs = val
