@@ -185,7 +185,7 @@ def main():
                         welcome_label = ctk.CTkLabel(master=start_screen, text="Welcome to ViewTrip", font=("Helvetica", 18, "underline"))
                         welcome_label.pack(pady=10)
 
-                        welcome_information = ctk.CTkLabel(master=start_screen, text="To get started, press the plus button to add a new trip.", font=("Helvetica", 16, "italic"))
+                        welcome_information = ctk.CTkLabel(master=start_screen, text="To get started, press the plus button\n to add a new trip.", font=("Helvetica", 16, "italic"))
                         welcome_information.pack(pady=10)
 
                         my_image = ctk.CTkImage(light_image=Image.open('start_screen_logo.png'), dark_image=Image.open('start_screen_logo.png'), size=(200, 100))
@@ -310,16 +310,16 @@ def main():
                         train_screen = tk.Frame(self.master)
                         train_screen.pack(padx=10, pady=10)
 
-                        ctk.CTkLabel(train_screen, text=f"Trips from {start_station}").grid(row=0, column=0, columnspan=3, pady=10)
+                        ctk.CTkLabel(train_screen, text=f"Trips from {start_station}").grid(row=0, column=0, pady=10)
 
                         tree = ttk.Treeview(train_screen, columns=("Journey", "Departure", "Arrival"), show="headings")
-                        tree.column("Journey",anchor="center", width=200)
+                        tree.column("Journey",anchor="center", width=95)
                         tree.heading("Journey", text="Journey")
-                        tree.column("Departure",anchor="center", width=200)
+                        tree.column("Departure",anchor="center", width=95)
                         tree.heading("Departure", text="Departure")
-                        tree.column("Arrival",anchor="center", width=200)
+                        tree.column("Arrival",anchor="center", width=95)
                         tree.heading("Arrival", text="Arrival")
-                        tree.grid(row=1, column=0, columnspan=3, pady=10)
+                        tree.grid(row=1, column=0, columnspan=2, pady=10)
 
                         # Handler for item click event
                         def on_item_click(event):
@@ -410,9 +410,7 @@ def main():
                         detailed_journey_screen = tk.Frame(self.master)
                         detailed_journey_screen.pack(padx=10, pady=10)
 
-                        tree = ttk.Treeview(detailed_journey_screen, columns=("Leg", "Transport", "Origin", "Departure", "Destination", "Arrival"), show="headings")
-                        tree.column("Leg",anchor="center", width=200)
-                        tree.heading("Leg", text="Leg")
+                        tree = ttk.Treeview(detailed_journey_screen, columns=("Transport", "Origin", "Departure", "Destination", "Arrival"), show="headings")
                         tree.column("Transport",anchor="center", width=200)
                         tree.heading("Transport", text="Transport")
                         tree.column("Origin",anchor="center", width=200)
@@ -458,9 +456,7 @@ def main():
                         for key,val in trip_info_dict["journeys"][journey_index].items():
                                 if key == "legs":
                                         legs = val
-                                        i = 0
                                         for leg in legs:
-                                                i += 1
                                                 transport = leg["transportation"].get("disassembledName")
                                                 if transport is None:
                                                         transport = "Walking"
@@ -472,7 +468,7 @@ def main():
                                                 arrival = leg["destination"]["arrivalTimeEstimated"][11:19]
 
                                                 # Append train information to the list
-                                                train_info.append((i, transport, origin, departure, destination, arrival))
+                                                train_info.append((transport, origin, departure, destination, arrival))
 
                                         journey_index +=1
 
