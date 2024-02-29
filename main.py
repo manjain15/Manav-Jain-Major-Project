@@ -396,8 +396,8 @@ def main():
                         journey_no = 0
                         for journey in trip_info_dict["journeys"]:
                                 journey_no += 1
-                                departure_time = journey["legs"][0]["origin"]["departureTimeEstimated"][11:19]
-                                arrival_time = journey["legs"][-1]["destination"]["arrivalTimeEstimated"][11:19]
+                                departure_time = journey["legs"][0]["origin"]["departureTimeEstimated"][11:16]
+                                arrival_time = journey["legs"][-1]["destination"]["arrivalTimeEstimated"][11:16]
 
                                 train_info.append((journey_no, departure_time, arrival_time))
 
@@ -411,15 +411,15 @@ def main():
                         detailed_journey_screen.pack(padx=10, pady=10)
 
                         tree = ttk.Treeview(detailed_journey_screen, columns=("Transport", "Origin", "Departure", "Destination", "Arrival"), show="headings")
-                        tree.column("Transport",anchor="center", width=200)
+                        tree.column("Transport",anchor="center", width=50)
                         tree.heading("Transport", text="Transport")
-                        tree.column("Origin",anchor="center", width=200)
+                        tree.column("Origin",anchor="center", width=75)
                         tree.heading("Origin", text="Origin")
-                        tree.column("Departure",anchor="center", width=200)
+                        tree.column("Departure",anchor="center", width=50)
                         tree.heading("Departure", text="Departure")
-                        tree.column("Destination",anchor="center", width=200)
+                        tree.column("Destination",anchor="center", width=75)
                         tree.heading("Destination", text="Destination")
-                        tree.column("Arrival",anchor="center", width=200)
+                        tree.column("Arrival",anchor="center", width=50)
                         tree.heading("Arrival", text="Arrival")
                         tree.grid(row=1, column=0, columnspan=5, pady=10)
 
@@ -459,13 +459,13 @@ def main():
                                         for leg in legs:
                                                 transport = leg["transportation"].get("disassembledName")
                                                 if transport is None:
-                                                        transport = "Walking"
+                                                        transport = "Walk"
                                                 if transport == "M":
                                                         transport == "Metro"
-                                                origin = leg["origin"]["name"]
-                                                departure = leg["origin"]["departureTimeEstimated"][11:19]
-                                                destination = leg["destination"]["name"]
-                                                arrival = leg["destination"]["arrivalTimeEstimated"][11:19]
+                                                origin = leg["origin"]["disassembledName"]
+                                                departure = leg["origin"]["departureTimeEstimated"][11:16]
+                                                destination = leg["destination"]["disassembledName"]
+                                                arrival = leg["destination"]["arrivalTimeEstimated"][11:16]
 
                                                 # Append train information to the list
                                                 train_info.append((transport, origin, departure, destination, arrival))
@@ -500,33 +500,37 @@ def main():
 
                         all_keys = redis_connection.keys()
 
-                        if all_keys is None:
-                                ctk.CTkLabel(master=display_saved_trips_screen, text="Save a trip first").grid(row=0, column=2, columnspan=2, pady=10)
-                                ctk.CTkButton(master=display_saved_trips_screen, text="Go Back to Start Screen", command=self.show_start_screen).grid(row=1, column=2, columnspan=2, pady=10)
+                        if all_keys == []:
+                                ctk.CTkLabel(master=display_saved_trips_screen, text="Save a trip first").grid(pady=10)
+                                def show_start_screen():
+                                        self.show_start_screen()
+                                        display_saved_trips_screen.destroy()
+                                display_saved_trips_screen.after(3000, show_start_screen)
 
-                        trips_tree = ttk.Treeview(display_saved_trips_screen, columns=("Trip"), show="headings")
-                        trips_tree.column("Trip",anchor="center", width=400)
-                        trips_tree.heading("Trip", text="Trip")
-                        trips_tree.grid(row=1, column=0, columnspan=5, pady=10)
+                        else:
+                                trips_tree = ttk.Treeview(display_saved_trips_screen, columns=("Trip"), show="headings")
+                                trips_tree.column("Trip",anchor="center", width=300)
+                                trips_tree.heading("Trip", text="Trip")
+                                trips_tree.grid(row=1, column=0, columnspan=5, pady=10)
 
-                        for key in all_keys:
-                                key_str = key.decode('utf-8')
-                                trips_tree.insert("", "end", text=key_str, values=(key_str,))
-                        
-                        # Handler for item click event
-                        def on_item_click(event):
-                                item_id = trips_tree.focus()  # Get the ID of the clicked item
-                                if item_id:  # Ensure that an item was clicked
-                                        item_values = trips_tree.item(item_id, "values")
-                                        if item_values:
-                                                self.show_saved_trip_detailed_screen(item_values)
+                                for key in all_keys:
+                                        key_str = key.decode('utf-8')
+                                        trips_tree.insert("", "end", text=key_str, values=(key_str,))
+                                
+                                # Handler for item click event
+                                def on_item_click(event):
+                                        item_id = trips_tree.focus()  # Get the ID of the clicked item
+                                        if item_id:  # Ensure that an item was clicked
+                                                item_values = trips_tree.item(item_id, "values")
+                                                if item_values:
+                                                        self.show_saved_trip_detailed_screen(item_values)
 
-                        trips_tree.bind("<ButtonRelease-1>", on_item_click)
-                        
-                        back_button = ctk.CTkButton(master=display_saved_trips_screen, text="Back", command=self.show_start_screen)
-                        back_button.grid(row=2, column=0, columnspan=2, pady=10)
+                                trips_tree.bind("<ButtonRelease-1>", on_item_click)
+                                
+                                back_button = ctk.CTkButton(master=display_saved_trips_screen, text="Back", command=self.show_start_screen)
+                                back_button.grid(row=2, column=0, columnspan=2, pady=10)
 
-                        self.current_screen = display_saved_trips_screen
+                                self.current_screen = display_saved_trips_screen
 
                 def show_saved_trip_detailed_screen(self, treeview_values):
                         if self.current_screen:
@@ -535,18 +539,16 @@ def main():
                         saved_trip_detailed_screen = tk.Frame(self.master)
                         saved_trip_detailed_screen.pack(padx=10, pady=10)
 
-                        detailed_trips_tree = ttk.Treeview(saved_trip_detailed_screen, columns=("Leg", "Transport", "Origin", "Departure", "Destination", "Arrival"), show="headings")
-                        detailed_trips_tree.column("Leg",anchor="center", width=200)
-                        detailed_trips_tree.heading("Leg", text="Leg")
-                        detailed_trips_tree.column("Transport",anchor="center", width=200)
+                        detailed_trips_tree = ttk.Treeview(saved_trip_detailed_screen, columns=("Transport", "Origin", "Departure", "Destination", "Arrival"), show="headings")
+                        detailed_trips_tree.column("Transport",anchor="center", width=50)
                         detailed_trips_tree.heading("Transport", text="Transport")
-                        detailed_trips_tree.column("Origin",anchor="center", width=200)
+                        detailed_trips_tree.column("Origin",anchor="center", width=75)
                         detailed_trips_tree.heading("Origin", text="Origin")
-                        detailed_trips_tree.column("Departure",anchor="center", width=200)
+                        detailed_trips_tree.column("Departure",anchor="center", width=50)
                         detailed_trips_tree.heading("Departure", text="Departure")
-                        detailed_trips_tree.column("Destination",anchor="center", width=200)
+                        detailed_trips_tree.column("Destination",anchor="center", width=75)
                         detailed_trips_tree.heading("Destination", text="Destination")
-                        detailed_trips_tree.column("Arrival",anchor="center", width=200)
+                        detailed_trips_tree.column("Arrival",anchor="center", width=50)
                         detailed_trips_tree.heading("Arrival", text="Arrival")
                         detailed_trips_tree.grid(row=1, column=0, columnspan=5, pady=10)
 
@@ -562,18 +564,22 @@ def main():
 
                         self.current_screen = saved_trip_detailed_screen
 
-
         if __name__ == "__main__":
                 root = tk.Tk()
-                root.wm_geometry("293x633")
+                root.wm_geometry("300x650")
                 root.resizable(False, False)
                 main = gui_handler(root)
+
+                def on_closing():
+                        redis_connection.flushdb()
+                        print("Successfully flushed the database")
+                        redis_connection.close()
+                        print("Successfully closed the connection")
+                        root.destroy()
+                
+                root.protocol("WM_DELETE_WINDOW", on_closing)
+
                 root.mainloop()
 
 if __name__ == "__main__":
-        try:
-                main()
-
-        finally:
-               redis_connection.flushdb()
-               redis_connection.close()
+        main()
