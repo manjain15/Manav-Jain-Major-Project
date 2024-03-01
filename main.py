@@ -462,9 +462,9 @@ def main():
                                                         transport = "Walk"
                                                 if transport == "M":
                                                         transport == "Metro"
-                                                origin = leg["origin"]["disassembledName"]
+                                                origin = leg["origin"]["name"]
                                                 departure = leg["origin"]["departureTimeEstimated"][11:16]
-                                                destination = leg["destination"]["disassembledName"]
+                                                destination = leg["destination"]["name"]
                                                 arrival = leg["destination"]["arrivalTimeEstimated"][11:16]
 
                                                 # Append train information to the list
