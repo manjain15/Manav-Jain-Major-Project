@@ -164,7 +164,7 @@ def main():
                 def __init__(self, master):
                         self.master = master
                         self.master.title("ViewTrip")
-                        ctk.set_default_color_theme("black-gold.json")
+                        ctk.set_default_color_theme("black-red.json")
 
                         self.current_screen = None
 
@@ -410,18 +410,29 @@ def main():
                         detailed_journey_screen = tk.Frame(self.master)
                         detailed_journey_screen.pack(padx=10, pady=10)
 
-                        tree = ttk.Treeview(detailed_journey_screen, columns=("Transport", "Origin", "Departure", "Destination", "Arrival"), show="headings")
-                        tree.column("Transport",anchor="center", width=50)
-                        tree.heading("Transport", text="Transport")
-                        tree.column("Origin",anchor="center", width=75)
+                        tree = ttk.Treeview(detailed_journey_screen, columns=("Route", "Origin", "Departure", "Destination", "Arrival"), show="headings")
+                        tree.column("Route",anchor="center", width=50)
+                        tree.heading("Route", text="Route")
+                        tree.column("Origin",anchor="center", width=70)
                         tree.heading("Origin", text="Origin")
                         tree.column("Departure",anchor="center", width=50)
                         tree.heading("Departure", text="Departure")
-                        tree.column("Destination",anchor="center", width=75)
+                        tree.column("Destination",anchor="center", width=70)
                         tree.heading("Destination", text="Destination")
                         tree.column("Arrival",anchor="center", width=50)
                         tree.heading("Arrival", text="Arrival")
-                        tree.grid(row=1, column=0, columnspan=5, pady=10)
+                        tree.grid(row=1, column=0, pady=10, padx=0)
+
+                        # Handler for item click event
+                        def on_item_click(event):
+                                item_id = tree.focus()  # Get the ID of the clicked item
+                                if item_id:  # Ensure that an item was clicked
+                                        item_values = tree.item(item_id, "values")
+                                        detailed_information = ctk.CTkLabel(detailed_journey_screen, text=(f"Route: {item_values[0]}\n Origin: {item_values[1]}\n Departure: {item_values[2]}\n Destination: {item_values[3]}\n Arrival: {item_values[4]}"))
+                                        detailed_information.grid(pady=10, padx=0)
+                                        detailed_journey_screen.after(3000, detailed_information.destroy)
+
+                        tree.bind("<ButtonRelease-1>", on_item_click)
 
                         train_info = []
                         coords = {}
@@ -484,10 +495,10 @@ def main():
 
                         # Back button to return to the previous screen
                         back_button = ctk.CTkButton(detailed_journey_screen, text="Back", command=lambda: self.show_train_screen(start_station, destination_station, departure_day, departure_time, no_of_trips))
-                        back_button.grid(row=2, column=0, pady=10, columnspan=2)
+                        back_button.grid(row=2, column=0, pady=10, padx=5)
 
                         save_trip_button = ctk.CTkButton(detailed_journey_screen, text="Save Trip", command=save_trip)
-                        save_trip_button.grid(row=2, column=2, pady=10, columnspan=2)
+                        save_trip_button.grid(row=2, column=2, pady=10, padx=5)
 
                         self.current_screen = detailed_journey_screen
 
@@ -539,18 +550,18 @@ def main():
                         saved_trip_detailed_screen = tk.Frame(self.master)
                         saved_trip_detailed_screen.pack(padx=10, pady=10)
 
-                        detailed_trips_tree = ttk.Treeview(saved_trip_detailed_screen, columns=("Transport", "Origin", "Departure", "Destination", "Arrival"), show="headings")
-                        detailed_trips_tree.column("Transport",anchor="center", width=50)
-                        detailed_trips_tree.heading("Transport", text="Transport")
-                        detailed_trips_tree.column("Origin",anchor="center", width=75)
+                        detailed_trips_tree = ttk.Treeview(saved_trip_detailed_screen, columns=("Route", "Origin", "Departure", "Destination", "Arrival"), show="headings")
+                        detailed_trips_tree.column("Route",anchor="center", width=50)
+                        detailed_trips_tree.heading("Route", text="Route")
+                        detailed_trips_tree.column("Origin",anchor="center", width=70)
                         detailed_trips_tree.heading("Origin", text="Origin")
                         detailed_trips_tree.column("Departure",anchor="center", width=50)
                         detailed_trips_tree.heading("Departure", text="Departure")
-                        detailed_trips_tree.column("Destination",anchor="center", width=75)
+                        detailed_trips_tree.column("Destination",anchor="center", width=70)
                         detailed_trips_tree.heading("Destination", text="Destination")
                         detailed_trips_tree.column("Arrival",anchor="center", width=50)
                         detailed_trips_tree.heading("Arrival", text="Arrival")
-                        detailed_trips_tree.grid(row=1, column=0, columnspan=5, pady=10)
+                        detailed_trips_tree.grid(row=1, column=0, pady=10, padx=0)
 
                         desired_value = redis_connection.get(treeview_values[0])
                         decoded_desired_value = desired_value.decode("utf-8")
@@ -558,6 +569,17 @@ def main():
 
                         for value in list_of_desired_values:
                                 detailed_trips_tree.insert("", "end", values=value)
+
+                        # Handler for item click event
+                        def on_item_click(event):
+                                item_id = detailed_trips_tree.focus()  # Get the ID of the clicked item
+                                if item_id:  # Ensure that an item was clicked
+                                        item_values = detailed_trips_tree.item(item_id, "values")
+                                        detailed_information = ctk.CTkLabel(saved_trip_detailed_screen, text=(f"Route: {item_values[0]}\n Origin: {item_values[1]}\n Departure: {item_values[2]}\n Destination: {item_values[3]}\n Arrival: {item_values[4]}"))
+                                        detailed_information.grid(pady=10, padx=0)
+                                        saved_trip_detailed_screen.after(3000, detailed_information.destroy)
+
+                        detailed_trips_tree.bind("<ButtonRelease-1>", on_item_click)
                         
                         back_button = ctk.CTkButton(master=saved_trip_detailed_screen, text="Back", command=self.show_display_saved_trips_screen)
                         back_button.grid(row=2, column=0, columnspan=2, pady=10)
@@ -572,9 +594,7 @@ def main():
 
                 def on_closing():
                         redis_connection.flushdb()
-                        print("Successfully flushed the database")
                         redis_connection.close()
-                        print("Successfully closed the connection")
                         root.destroy()
                 
                 root.protocol("WM_DELETE_WINDOW", on_closing)

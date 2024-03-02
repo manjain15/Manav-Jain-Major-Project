@@ -17,22 +17,22 @@
       "border_width": 1,
       "fg_color": "#000000",
       "hover_color": "gray",
-      "border_color": "#FFDF00",
-      "text_color": "#FFDF00",
+      "border_color": "#D3D3D3",
+      "text_color": "#E31C25",
       "text_color_disabled": ["gray74", "gray60"]
     },
     "CTkLabel": {
       "corner_radius": 6,
       "border_width": 1,
       "fg_color": "#000000",
-      "border_color": "#FFDF00",
-      "text_color": "#FFDF00"
+      "border_color": "#D3D3D3",
+      "text_color": "#E31C25"
     },
     "CTkEntry": {
       "corner_radius": 6,
       "border_width": 2,
       "fg_color": "#000000",
-      "border_color": "#FFDF00",
+      "border_color": "#D3D3D3",
       "text_color": ["gray14", "gray84"],
       "placeholder_text_color": ["gray52", "gray62"]
     },
@@ -139,7 +139,7 @@
     },
     "CTkFont": {
       "macOS": {
-        "family": "SF Display",
+        "family": "Helvetica",
         "size": 13,
         "weight": "normal"
       },
