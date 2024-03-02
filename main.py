@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter.ttk import *
 from tkinter.constants import *
 from typing import List
 from tkinter import messagebox
@@ -296,7 +297,8 @@ def main():
                         next_button = ctk.CTkButton(selection_screen, text="Next", command=check_validity)
                         next_button.grid(row=10, column=0, columnspan=2, pady=10)
                         
-                        back_button = ctk.CTkButton(selection_screen, text="Back", command=self.show_start_screen)
+                        my_image = ctk.CTkImage(light_image=Image.open('back_button.png'), dark_image=Image.open('back_button.png'))
+                        back_button = ctk.CTkButton(selection_screen, text="Back", image=my_image, compound=LEFT, command=self.show_start_screen)
                         back_button.grid(row=11, column=0, columnspan=2, pady=10)
 
                         self.current_screen = selection_screen
@@ -338,8 +340,9 @@ def main():
 
                         for train in train_info:
                                 tree.insert("", "end", values=train)
-
-                        back_button = ctk.CTkButton(train_screen, text="Back", command=self.show_selection_screen)
+                        
+                        my_image = ctk.CTkImage(light_image=Image.open('back_button.png'), dark_image=Image.open('back_button.png'))
+                        back_button = ctk.CTkButton(train_screen, text="Back", image=my_image, compound=LEFT, command=self.show_selection_screen)
                         back_button.grid(row=2, column=0, pady=10)
 
                         self.current_screen = train_screen
@@ -493,8 +496,10 @@ def main():
                                 redis_connection.set(trip_id, train_json)
                                 self.show_start_screen()
 
+                        my_image = ctk.CTkImage(light_image=Image.open('back_button.png'), dark_image=Image.open('back_button.png'))
+
                         # Back button to return to the previous screen
-                        back_button = ctk.CTkButton(detailed_journey_screen, text="Back", command=lambda: self.show_train_screen(start_station, destination_station, departure_day, departure_time, no_of_trips))
+                        back_button = ctk.CTkButton(detailed_journey_screen, text="Back", image=my_image, compound=LEFT, command=lambda: self.show_train_screen(start_station, destination_station, departure_day, departure_time, no_of_trips))
                         back_button.grid(row=2, column=0, pady=10, padx=5)
 
                         save_trip_button = ctk.CTkButton(detailed_journey_screen, text="Save Trip", command=save_trip)
@@ -538,7 +543,8 @@ def main():
 
                                 trips_tree.bind("<ButtonRelease-1>", on_item_click)
                                 
-                                back_button = ctk.CTkButton(master=display_saved_trips_screen, text="Back", command=self.show_start_screen)
+                                my_image = ctk.CTkImage(light_image=Image.open('back_button.png'), dark_image=Image.open('back_button.png'))
+                                back_button = ctk.CTkButton(master=display_saved_trips_screen, text="Back", image=my_image, compound=LEFT, command=self.show_start_screen)
                                 back_button.grid(row=2, column=0, columnspan=2, pady=10)
 
                                 self.current_screen = display_saved_trips_screen
@@ -581,7 +587,8 @@ def main():
 
                         detailed_trips_tree.bind("<ButtonRelease-1>", on_item_click)
                         
-                        back_button = ctk.CTkButton(master=saved_trip_detailed_screen, text="Back", command=self.show_display_saved_trips_screen)
+                        my_image = ctk.CTkImage(light_image=Image.open('back_button.png'), dark_image=Image.open('back_button.png'))
+                        back_button = ctk.CTkButton(master=saved_trip_detailed_screen, text="Back", image=my_image, compound=LEFT, command=self.show_display_saved_trips_screen)
                         back_button.grid(row=2, column=0, columnspan=2, pady=10)
 
                         self.current_screen = saved_trip_detailed_screen
