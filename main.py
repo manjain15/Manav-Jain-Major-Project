@@ -16,6 +16,7 @@ import datetime
 from PIL import Image
 import folium
 from folium import plugins
+import geocoder
 import pygame.mixer
 pygame.mixer.init()
 from TransportNSW import TransportNSW
@@ -468,7 +469,7 @@ def main():
                         m.add_child(ant_path)
 
                         # Save the map to an HTML file
-                        m.save('map_with_coordinates.html')
+                        m.save('route_map.html')       
 
                         for key,val in trip_info_dict["journeys"][journey_index].items():
                                 if key == "legs":

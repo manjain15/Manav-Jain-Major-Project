@@ -4,7 +4,7 @@ from google.transit import gtfs_realtime_pb2
 from protobuf_to_dict import protobuf_to_dict
 import requests
 
-api_url = "https://api.transport.nsw.gov.au/v1/gtfs/vehiclepos/sydneytrains"
+api_url = "https://api.transport.nsw.gov.au/v2/gtfs/vehiclepos/sydneytrains"
 api_key = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJwMWpGZWhGZTB4cHJiT05OMWxsenBHYUN1UkNhN1VIMGxNNTl4UDZURkpzIiwiaWF0IjoxNzAzMTM4ODY4fQ.1pTAXxfPAJ64BzqxaRU9xnFPflsJ0niKPDC6BBmDpkk"
 headers = {"Authorization": f"apikey {api_key}"}
 
@@ -41,7 +41,7 @@ json_data = json.dumps(feed_dict)
 #                                 print(entity["position"])
 
 # Write JSON data to a file
-with open('gtfs_realtime_feed.json', 'w') as json_file:
+with open('train_locations.json', 'w') as json_file:
     json_file.write(json_data)
 
-print("JSON data has been written to gtfs_realtime_feed.json")
+print("JSON data has been written to train_locations.json")
