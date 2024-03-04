@@ -576,10 +576,39 @@ def main():
                         desired_value = redis_connection.get(treeview_values[0])
                         decoded_desired_value = desired_value.decode("utf-8")
                         list_of_desired_values = json.loads(decoded_desired_value)
+                        
+                        # Collating data to call get_train_info function again
+                        origin = list_of_desired_values[0][1]
+                        destination = list_of_desired_values[-1][3]
+                        current_date = datetime.datetime.now().strftime("%Y%m%d")
+                        current_time = datetime.datetime.now().strftime("%H%M")
 
-                        for value in list_of_desired_values:
-                                detailed_trips_tree.insert("", "end", values=value)
+                        train_info, trip_info_dict = self.get_train_info(origin, destination, current_date, current_time, 1)
 
+                        train_info = []
+                        journey_index = int(treeview_values[0]) - 1
+                        for key,val in trip_info_dict["journeys"][journey_index].items():
+                                if key == "legs":
+                                        legs = val
+                                        for leg in legs:
+                                                transport = leg["transportation"].get("disassembledName")
+                                                if transport is None:
+                                                        transport = "Walk"
+                                                if transport == "M":
+                                                        transport == "Metro"
+                                                origin = leg["origin"]["name"]
+                                                departure = leg["origin"]["departureTimeEstimated"][11:16]
+                                                destination = leg["destination"]["name"]
+                                                arrival = leg["destination"]["arrivalTimeEstimated"][11:16]
+
+                                                # Append train information to the list
+                                                train_info.append((transport, origin, departure, destination, arrival))
+
+                                        journey_index +=1
+
+                        for train in train_info:
+                                detailed_trips_tree.insert("", "end", values=train)
+                        
                         # Handler for item click event
                         def on_item_click(event):
                                 item_id = detailed_trips_tree.focus()  # Get the ID of the clicked item
@@ -600,7 +629,7 @@ def main():
         if __name__ == "__main__":
                 root = tk.Tk()
                 root.wm_geometry("300x650")
-                root.resizable(False, False)
+                root.resizable(True, False)
                 main = gui_handler(root)
 
                 def on_closing():
