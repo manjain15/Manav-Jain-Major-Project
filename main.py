@@ -494,7 +494,6 @@ def main():
                                 tree.insert("", "end", values=train)
                         
                         def save_trip():
-                                all_keys = redis_connection.keys("*")
                                 trip_id = f"{origin} to {destination}"
                                 train_json = json.dumps(train_info)
                                 redis_connection.set(trip_id, train_json)
@@ -577,17 +576,21 @@ def main():
                         decoded_desired_value = desired_value.decode("utf-8")
                         list_of_desired_values = json.loads(decoded_desired_value)
                         
+                        midpoint = int(len(all_stops)/2)
+                        print(all_stops[:midpoint])
+
                         # Collating data to call get_train_info function again
                         origin = list_of_desired_values[0][1]
+                        origin_station = all_stops.get(origin)
                         destination = list_of_desired_values[-1][3]
+                        destination_station = all_stops.get(destination)
                         current_date = datetime.datetime.now().strftime("%Y%m%d")
                         current_time = datetime.datetime.now().strftime("%H%M")
 
-                        train_info, trip_info_dict = self.get_train_info(origin, destination, current_date, current_time, 1)
+                        train_info, trip_info_dict = self.get_train_info(origin_station, destination_station, current_date, current_time, 1)
 
                         train_info = []
-                        journey_index = int(treeview_values[0]) - 1
-                        for key,val in trip_info_dict["journeys"][journey_index].items():
+                        for key,val in trip_info_dict["journeys"][0].items():
                                 if key == "legs":
                                         legs = val
                                         for leg in legs:
