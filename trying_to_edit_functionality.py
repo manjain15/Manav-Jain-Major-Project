@@ -24,6 +24,57 @@ tnsw = TransportNSW()
 
 redis_connection = redislite.Redis("/Users/manavjain/github-classroom/Baulkhamhills-hs/Manav-Jain-Major-Project/Trips", ":memory")
 
+# START OF AUTOCOMPLETE COMBOBOX CODE
+class AutocompleteCombobox(ttk.Combobox):
+
+        def __init__(self, *args, **kwargs):
+                """Initialize the AutocompleteCombobox widget."""
+                super().__init__(*args, **kwargs)
+                self.set_completion_list([])
+                self.bind('<KeyRelease>', self.handle_keyrelease)
+
+        def set_completion_list(self, completion_list: List[str]) -> None:
+                """Set the completion list for autocompletion."""
+                self._completion_list = sorted(completion_list, key=str.lower)
+                self._hits = []
+                self._hit_index = 0
+                self.position = 0
+                self['values'] = self._completion_list
+
+        def autocomplete(self, delta: int = 0) -> None:
+                """Perform autocompletion based on the current input."""
+                if delta:
+                        self.delete(self.position, END)
+                else:
+                        self.position = len(self.get())
+                _hits = []
+                for element in self._completion_list:
+                        if element.lower().startswith(self.get().lower()):
+                                _hits.append(element)
+                if _hits != self._hits:
+                        self._hit_index = 0
+                        self._hits = _hits
+                if self._hits:
+                        self.delete(0, END)
+                        self.insert(0, self._hits[self._hit_index])
+                        self.select_range(self.position, END)
+
+        def handle_keyrelease(self, event: tk.Event) -> None:
+                """Handle key release events and perform autocompletion."""
+                if event.keysym == "BackSpace":
+                        self.delete(self.index(INSERT), END)
+                        self.position = self.index(END)
+                elif event.keysym == "Left":
+                        if self.position < self.index(END):
+                                self.delete(self.position, END)
+                        else:
+                                self.position -= 1
+                                self.delete(self.position, END)
+                elif event.keysym == "Right":
+                        self.position = self.index(END)
+                elif len(event.keysym) == 1:
+                        self.autocomplete()
+
 # CODE FOR PARSING SYDNEYTRAINS AND BUSES API
 def get_gtfs_data(api_key, api_url):
     headers = {'Authorization': f'apikey {api_key}'}
@@ -75,6 +126,81 @@ def parse_gtfs_data(data):
 
     return parsed_data
 
+# CODE TO RETRIEVE PARSED DATA FROM TNSW API
+def get_train_info(self, start_station, destination_station, departure_day, departure_time, no_of_trips):
+        
+        train_info = []
+
+        def parse_api_response_to_dict(api_url, params, headers):
+                try:
+                        # Make the request
+                        response = requests.get(api_url, params=params, headers=headers)
+                        
+                        # Check if the request was successful (status code 200)
+                        if response.status_code == 200:
+                                # Parse the JSON response into a dictionary
+                                data_dict = response.json()
+                                return data_dict
+                        else:
+                                print(f"Error: {response.status_code} - {response.text}")
+                                return None
+                except Exception as e:
+                        print(f"An error occurred: {e}")
+                        return None
+
+        # API endpoint
+        api_url = "https://api.transport.nsw.gov.au/v1/tp/trip"
+
+        # Parameters
+        params = {
+                'outputFormat': 'rapidJSON',
+                'coordOutputFormat': 'EPSG:4326',
+                'depArrMacro': 'dep',
+                'itdDate': departure_day,
+                'itdTime': departure_time,
+                'type_origin': 'any',
+                'name_origin': start_station,
+                'type_destination': 'any',
+                'name_destination': destination_station,
+                'calcNumberOfTrips': no_of_trips,
+                'TfNSWTR': 'true',
+                'version': '10.2.1.42',
+                'itOptionsActive': '1',
+                'cycleSpeed': '16'
+        }
+
+        headers = {
+                'Authorization': 'apikey eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJwMWpGZWhGZTB4cHJiT05OMWxsenBHYUN1UkNhN1VIMGxNNTl4UDZURkpzIiwiaWF0IjoxNzAzMTM4ODY4fQ.1pTAXxfPAJ64BzqxaRU9xnFPflsJ0niKPDC6BBmDpkk'
+        }
+
+        # Parse API response into dictionary
+        trip_info_dict = parse_api_response_to_dict(api_url, params, headers)
+        journey_no = 0
+        for journey in trip_info_dict["journeys"]:
+                journey_no += 1
+                departure_time = journey["legs"][0]["origin"]["departureTimeEstimated"][11:16]
+                arrival_time = journey["legs"][-1]["destination"]["arrivalTimeEstimated"][11:16]
+
+                train_info.append((journey_no, departure_time, arrival_time))
+
+        return train_info, trip_info_dict
+
+def detailed_tree_view(self, screen):
+        tree = ttk.Treeview(screen, columns=("Route", "Origin", "Departure", "Destination", "Arrival"), show="headings")
+        tree.column("Route",anchor="center", width=50)
+        tree.heading("Route", text="Route")
+        tree.column("Origin",anchor="center", width=70)
+        tree.heading("Origin", text="Origin")
+        tree.column("Departure",anchor="center", width=50)
+        tree.heading("Departure", text="Departure")
+        tree.column("Destination",anchor="center", width=70)
+        tree.heading("Destination", text="Destination")
+        tree.column("Arrival",anchor="center", width=50)
+        tree.heading("Arrival", text="Arrival")
+        tree.grid(row=1, column=0, pady=10, padx=0)
+
+        return tree
+
 def main():
         api_key = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJwMWpGZWhGZTB4cHJiT05OMWxsenBHYUN1UkNhN1VIMGxNNTl4UDZURkpzIiwiaWF0IjoxNzAzMTM4ODY4fQ.1pTAXxfPAJ64BzqxaRU9xnFPflsJ0niKPDC6BBmDpkk'
         bus_data = get_gtfs_data(api_key, 'https://api.transport.nsw.gov.au/v1/gtfs/schedule/buses')
@@ -105,57 +231,6 @@ def main():
                 counter1+=1
 
         all_stops = bus_stops | train_stops
-
-        # START OF AUTOCOMPLETE COMBOBOX CODE
-        class AutocompleteCombobox(ttk.Combobox):
-
-                def __init__(self, *args, **kwargs):
-                        """Initialize the AutocompleteCombobox widget."""
-                        super().__init__(*args, **kwargs)
-                        self.set_completion_list([])
-                        self.bind('<KeyRelease>', self.handle_keyrelease)
-
-                def set_completion_list(self, completion_list: List[str]) -> None:
-                        """Set the completion list for autocompletion."""
-                        self._completion_list = sorted(completion_list, key=str.lower)
-                        self._hits = []
-                        self._hit_index = 0
-                        self.position = 0
-                        self['values'] = self._completion_list
-
-                def autocomplete(self, delta: int = 0) -> None:
-                        """Perform autocompletion based on the current input."""
-                        if delta:
-                                self.delete(self.position, END)
-                        else:
-                                self.position = len(self.get())
-                        _hits = []
-                        for element in self._completion_list:
-                                if element.lower().startswith(self.get().lower()):
-                                        _hits.append(element)
-                        if _hits != self._hits:
-                                self._hit_index = 0
-                                self._hits = _hits
-                        if self._hits:
-                                self.delete(0, END)
-                                self.insert(0, self._hits[self._hit_index])
-                                self.select_range(self.position, END)
-
-                def handle_keyrelease(self, event: tk.Event) -> None:
-                        """Handle key release events and perform autocompletion."""
-                        if event.keysym == "BackSpace":
-                                self.delete(self.index(INSERT), END)
-                                self.position = self.index(END)
-                        elif event.keysym == "Left":
-                                if self.position < self.index(END):
-                                        self.delete(self.position, END)
-                                else:
-                                        self.position -= 1
-                                        self.delete(self.position, END)
-                        elif event.keysym == "Right":
-                                self.position = self.index(END)
-                        elif len(event.keysym) == 1:
-                                self.autocomplete()
 
         # Play the startup sound
         pygame.mixer.music.load("startup_sound.mp3")
@@ -340,7 +415,7 @@ def main():
 
                         start_stop_id = all_stops[start_station][1:]
                         destination_stop_id = all_stops[destination_station][1:]
-                        train_info, trip_info_dict = self.get_train_info(start_stop_id, destination_stop_id, departure_day, departure_time, no_of_trips)
+                        train_info, trip_info_dict = get_train_info(start_stop_id, destination_stop_id, departure_day, departure_time, no_of_trips)
 
                         for train in train_info:
                                 tree.insert("", "end", values=train)
@@ -351,64 +426,6 @@ def main():
 
                         self.current_screen = train_screen
 
-                # CODE TO RETRIEVE PARSED DATA FROM TNSW API
-                def get_train_info(self, start_station, destination_station, departure_day, departure_time, no_of_trips):
-                        
-                        train_info = []
-
-                        def parse_api_response_to_dict(api_url, params, headers):
-                                try:
-                                        # Make the request
-                                        response = requests.get(api_url, params=params, headers=headers)
-                                        
-                                        # Check if the request was successful (status code 200)
-                                        if response.status_code == 200:
-                                                # Parse the JSON response into a dictionary
-                                                data_dict = response.json()
-                                                return data_dict
-                                        else:
-                                                print(f"Error: {response.status_code} - {response.text}")
-                                                return None
-                                except Exception as e:
-                                        print(f"An error occurred: {e}")
-                                        return None
-
-                        # API endpoint
-                        api_url = "https://api.transport.nsw.gov.au/v1/tp/trip"
-
-                        # Parameters
-                        params = {
-                                'outputFormat': 'rapidJSON',
-                                'coordOutputFormat': 'EPSG:4326',
-                                'depArrMacro': 'dep',
-                                'itdDate': departure_day,
-                                'itdTime': departure_time,
-                                'type_origin': 'any',
-                                'name_origin': start_station,
-                                'type_destination': 'any',
-                                'name_destination': destination_station,
-                                'calcNumberOfTrips': no_of_trips,
-                                'TfNSWTR': 'true',
-                                'version': '10.2.1.42',
-                                'itOptionsActive': '1',
-                                'cycleSpeed': '16'
-                        }
-
-                        headers = {
-                                'Authorization': 'apikey eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJwMWpGZWhGZTB4cHJiT05OMWxsenBHYUN1UkNhN1VIMGxNNTl4UDZURkpzIiwiaWF0IjoxNzAzMTM4ODY4fQ.1pTAXxfPAJ64BzqxaRU9xnFPflsJ0niKPDC6BBmDpkk'
-                        }
-
-                        # Parse API response into dictionary
-                        trip_info_dict = parse_api_response_to_dict(api_url, params, headers)
-                        journey_no = 0
-                        for journey in trip_info_dict["journeys"]:
-                                journey_no += 1
-                                departure_time = journey["legs"][0]["origin"]["departureTimeEstimated"][11:16]
-                                arrival_time = journey["legs"][-1]["destination"]["arrivalTimeEstimated"][11:16]
-
-                                train_info.append((journey_no, departure_time, arrival_time))
-
-                        return train_info, trip_info_dict
 
                 def show_detailed_journey_info_screen(self, trip_info_dict, treeview_values, start_station, destination_station, departure_day, departure_time, no_of_trips):
                         if self.current_screen:
@@ -417,18 +434,7 @@ def main():
                         detailed_journey_screen = tk.Frame(self.master)
                         detailed_journey_screen.pack(padx=10, pady=10)
 
-                        tree = ttk.Treeview(detailed_journey_screen, columns=("Route", "Origin", "Departure", "Destination", "Arrival"), show="headings")
-                        tree.column("Route",anchor="center", width=50)
-                        tree.heading("Route", text="Route")
-                        tree.column("Origin",anchor="center", width=70)
-                        tree.heading("Origin", text="Origin")
-                        tree.column("Departure",anchor="center", width=50)
-                        tree.heading("Departure", text="Departure")
-                        tree.column("Destination",anchor="center", width=70)
-                        tree.heading("Destination", text="Destination")
-                        tree.column("Arrival",anchor="center", width=50)
-                        tree.heading("Arrival", text="Arrival")
-                        tree.grid(row=1, column=0, pady=10, padx=0)
+                        tree = detailed_tree_view(detailed_journey_screen)
 
                         # Handler for item click event
                         def on_item_click(event):
@@ -559,18 +565,7 @@ def main():
                         saved_trip_detailed_screen = tk.Frame(self.master)
                         saved_trip_detailed_screen.pack(padx=10, pady=10)
 
-                        detailed_trips_tree = ttk.Treeview(saved_trip_detailed_screen, columns=("Route", "Origin", "Departure", "Destination", "Arrival"), show="headings")
-                        detailed_trips_tree.column("Route",anchor="center", width=50)
-                        detailed_trips_tree.heading("Route", text="Route")
-                        detailed_trips_tree.column("Origin",anchor="center", width=70)
-                        detailed_trips_tree.heading("Origin", text="Origin")
-                        detailed_trips_tree.column("Departure",anchor="center", width=50)
-                        detailed_trips_tree.heading("Departure", text="Departure")
-                        detailed_trips_tree.column("Destination",anchor="center", width=70)
-                        detailed_trips_tree.heading("Destination", text="Destination")
-                        detailed_trips_tree.column("Arrival",anchor="center", width=50)
-                        detailed_trips_tree.heading("Arrival", text="Arrival")
-                        detailed_trips_tree.grid(row=1, column=0, pady=10, padx=0)
+                        detailed_trips_tree = detailed_tree_view(saved_trip_detailed_screen)
 
                         desired_value = redis_connection.get(treeview_values[0])
                         decoded_desired_value = desired_value.decode("utf-8")
@@ -587,7 +582,7 @@ def main():
                         current_date = datetime.datetime.now().strftime("%Y%m%d")
                         current_time = datetime.datetime.now().strftime("%H%M")
 
-                        train_info, trip_info_dict = self.get_train_info(origin_station, destination_station, current_date, current_time, 1)
+                        train_info, trip_info_dict = get_train_info(origin_station, destination_station, current_date, current_time, 1)
 
                         train_info = []
                         for key,val in trip_info_dict["journeys"][0].items():
