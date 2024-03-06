@@ -16,7 +16,6 @@ import datetime
 from PIL import Image
 import folium
 from folium import plugins
-import geocoder
 import pygame.mixer
 pygame.mixer.init()
 from TransportNSW import TransportNSW
