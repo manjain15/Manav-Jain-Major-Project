@@ -16,6 +16,7 @@ import datetime
 from PIL import Image
 import folium
 from folium import plugins
+import timeit
 import pygame.mixer
 pygame.mixer.init()
 from TransportNSW import TransportNSW
@@ -73,6 +74,9 @@ class AutocompleteCombobox(ttk.Combobox):
                         self.position = self.index(END)
                 elif len(event.keysym) == 1:
                         self.autocomplete()
+                
+execution_time_for_autocomplete = timeit.timeit(lambda: AutocompleteCombobox(), number=1)
+print("Execution time for AutocompleteCombobox: ", execution_time_for_autocomplete)
 
 # CODE FOR PARSING SYDNEYTRAINS AND BUSES API
 def get_gtfs_data(api_key, api_url):
@@ -184,6 +188,9 @@ def get_train_info(self, start_station, destination_station, departure_day, depa
 
         return train_info, trip_info_dict
 
+# execution_time_for_get_train_info = timeit.timeit(get_train_info, number=1)
+# print("Execution time for get_gtfs_data: ", execution_time_for_get_train_info)
+
 def detailed_tree_view(self, screen):
         tree = ttk.Treeview(screen, columns=("Route", "Origin", "Departure", "Destination", "Arrival"), show="headings")
         tree.column("Route",anchor="center", width=50)
@@ -207,6 +214,21 @@ def main():
         parsed_bus_data = parse_gtfs_data(bus_data)
         parsed_train_data = parse_gtfs_data(train_data)
 
+        execution_time_for_get_gtfs_data = timeit.timeit(lambda: get_gtfs_data(api_key, "https://api.transport.nsw.gov.au/v1/gtfs/schedule/buses"), number=1)
+        print("Execution time for get_gtfs_data (buses): ", execution_time_for_get_gtfs_data)
+
+        execution_time_for_get_gtfs_data = timeit.timeit(lambda: get_gtfs_data(api_key, "https://api.transport.nsw.gov.au/v1/gtfs/schedule/sydneytrains"), number=1)
+        print("Execution time for get_gtfs_data (trains): ", execution_time_for_get_gtfs_data)
+
+        execution_time_for_parse_gtfs_data = timeit.timeit(lambda: parse_gtfs_data(bus_data), number=1)
+        print("Execution time for parse_gtfs_data (buses): ", execution_time_for_parse_gtfs_data)
+
+        execution_time_for_parse_gtfs_data = timeit.timeit(lambda: parse_gtfs_data(train_data), number=1)
+        print("Execution time for parse_gtfs_data (trains): ", execution_time_for_parse_gtfs_data)
+
+        execution_time_for_bus_stops = timeit.timeit(lambda: {parsed_bus_data["stops.txt"][i]["stop_name"]:parsed_bus_data["stops.txt"][i]["stop_id"] for i in range(37758)}, number=1)
+        print("Execution time for bus_stops: ", execution_time_for_bus_stops)
+
         counter = 0
         bus_stops = {}
         while counter <= 37758:
@@ -218,6 +240,8 @@ def main():
                                 bus_stops.update({stop_name:stop_id})
                 counter+=1  
 
+        execution_time_for_train_stops = timeit.timeit(lambda: {parsed_train_data["stops.txt"][i]["stop_name"]:parsed_train_data["stops.txt"][i]["stop_id"] for i in range(1214)}, number=1)
+        print("Execution time for train_stops: ", execution_time_for_train_stops)
         counter1 = 0
         train_stops = {}
         while counter1 <= 1214:
@@ -232,6 +256,8 @@ def main():
         all_stops = bus_stops | train_stops
 
         # Play the startup sound
+        execution_time_for_startup_sound = timeit.timeit(lambda: pygame.mixer.music.load("startup_sound.mp3"), number=1)
+
         pygame.mixer.music.load("startup_sound.mp3")
         pygame.mixer.music.play()
 
