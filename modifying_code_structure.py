@@ -10,7 +10,6 @@ import requests
 import zipfile
 import io
 import re
-import csv
 import redislite
 import json
 import datetime
@@ -27,13 +26,11 @@ redis_connection = redislite.Redis("/Users/manavjain/github-classroom/Baulkhamhi
 
 # START OF AUTOCOMPLETE COMBOBOX CODE
 class AutocompleteCombobox(ttk.Combobox):
-
         def __init__(self, *args, **kwargs):
                 """Initialize the AutocompleteCombobox widget."""
                 super().__init__(*args, **kwargs)
                 self.set_completion_list([])
                 self.bind('<KeyRelease>', self.handle_keyrelease)
-
         def set_completion_list(self, completion_list: List[str]) -> None:
                 """Set the completion list for autocompletion."""
                 self._completion_list = sorted(completion_list, key=str.lower)
@@ -41,7 +38,6 @@ class AutocompleteCombobox(ttk.Combobox):
                 self._hit_index = 0
                 self.position = 0
                 self['values'] = self._completion_list
-
         def autocomplete(self, delta: int = 0) -> None:
                 """Perform autocompletion based on the current input."""
                 if delta:
@@ -59,7 +55,6 @@ class AutocompleteCombobox(ttk.Combobox):
                         self.delete(0, END)
                         self.insert(0, self._hits[self._hit_index])
                         self.select_range(self.position, END)
-
         def handle_keyrelease(self, event: tk.Event) -> None:
                 """Handle key release events and perform autocompletion."""
                 if event.keysym == "BackSpace":
@@ -77,51 +72,65 @@ class AutocompleteCombobox(ttk.Combobox):
                         self.autocomplete()
 
 # CODE FOR PARSING SYDNEYTRAINS AND BUSES API
-def get_gtfs_data(api_key, api_url):
+def get_gtfs_data(api_key, api_url, specific_file=None):
     headers = {'Authorization': f'apikey {api_key}'}
-    response = requests.get(api_url, headers=headers)
-    if response.status_code == 200:
-        content_type = response.headers.get('Content-Type')
-        if content_type or 'application/octet-stream' in content_type:
-            try:
-                with zipfile.ZipFile(io.BytesIO(response.content)) as zip_file:
-                    return {file_name: zip_file.read(file_name).decode("utf-8") for file_name in zip_file.namelist()}
-            except Exception as e:
-                print(f"Error reading ZIP file: {e}")
-        else:
-            print("Unexpected content type. Expected 'application/octet-stream'.")
-    else:
-        print(f"API request failed with status code: {response.status_code}")
+    
+    try:
+        response = requests.get(api_url, headers=headers)
+        response.raise_for_status()  # Raise an exception for non-200 status codes
+        
+        with zipfile.ZipFile(io.BytesIO(response.content)) as zip_file:
+            gtfs_data = {}
+            for file_name in zip_file.namelist():
+                if specific_file and file_name != specific_file:
+                    continue
+                gtfs_data[file_name] = zip_file.read(file_name).decode("utf-8")
+            return gtfs_data
+    
+    except requests.RequestException as e:
+        print(f"API request failed: {e}")
+    
+    except Exception as e:
+        print(f"Error: {e}")
     
     return None
 
-def parse_gtfs_data(data):
+def parse_gtfs_data(data, specific_file=None):
     if data is None:
         return None
+    
     parsed_data = {}
     quoted_string_pattern = re.compile(r'"([^"]*?)"(?:,|$)')
+    
     for file_name, file_content in data.items():
+        if specific_file and file_name != specific_file:
+            continue
+        
         lines = file_content.split('\n')
-        # Skip the header row
+        
+        # Skip empty lines
+        lines = [line for line in lines if line.strip()]
+        
+        # Skip the header row if it exists
         header_line = lines[0].strip('"').strip('\r')
-        header = [match.group(1) for match in quoted_string_pattern.finditer(header_line)]
-        if not header:
-            header = [part.strip() for part in header_line.split(',') if part.strip()]
+        header = [match.group(1) for match in quoted_string_pattern.finditer(header_line)] or header_line.split(',')
+        
         file_name_without_extension = file_name.split('.')[0]
         file_id_header = f"{file_name_without_extension[:-1]}_id"
+        
         if file_id_header not in header:
             header.insert(0, file_id_header)
+        
         # Process rows excluding the header
         rows_data = [dict(zip(header, re.split('","|,",|,"|,"', row))) for row in lines[1:]]
-        cleaned_rows = [{key: value for key, value in row.items() if value is not None} for row in rows_data]
-        parsed_data[file_name] = cleaned_rows
+        parsed_data[file_name] = rows_data
+    
     return parsed_data
 
 # CODE TO RETRIEVE PARSED DATA FROM TNSW API
-def get_train_info(start_station, destination_station, departure_day, departure_time, no_of_trips):
+def get_train_info(api_key, start_station, destination_station, departure_day, departure_time, no_of_trips):
         
         train_info = []
-
         def parse_api_response_to_dict(api_url, params, headers):
                 try:
                         # Make the request
@@ -131,7 +140,6 @@ def get_train_info(start_station, destination_station, departure_day, departure_
                         if response.status_code == 200:
                                 # Parse the JSON response into a dictionary
                                 data_dict = response.json()
-                                print(response.text)
                                 return data_dict
                         else:
                                 print(f"Error: {response.status_code} - {response.text}")
@@ -139,10 +147,10 @@ def get_train_info(start_station, destination_station, departure_day, departure_
                 except Exception as e:
                         print(f"An error occurred: {e}")
                         return None
-
+        
         # API endpoint
         api_url = "https://api.transport.nsw.gov.au/v1/tp/trip"
-
+        
         # Parameters
         params = {
                 'outputFormat': 'rapidJSON',
@@ -160,11 +168,9 @@ def get_train_info(start_station, destination_station, departure_day, departure_
                 'itOptionsActive': '1',
                 'cycleSpeed': '16'
         }
-
-        headers = {
-                'Authorization': 'apikey eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJwMWpGZWhGZTB4cHJiT05OMWxsenBHYUN1UkNhN1VIMGxNNTl4UDZURkpzIiwiaWF0IjoxNzAzMTM4ODY4fQ.1pTAXxfPAJ64BzqxaRU9xnFPflsJ0niKPDC6BBmDpkk'
-        }
-
+        
+        headers = {'Authorization': f'apikey {api_key}'}
+        
         # Parse API response into dictionary
         trip_info_dict = parse_api_response_to_dict(api_url, params, headers)
         journey_no = 0
@@ -172,12 +178,11 @@ def get_train_info(start_station, destination_station, departure_day, departure_
                 journey_no += 1
                 departure_time = journey["legs"][0]["origin"]["departureTimeEstimated"][11:16]
                 arrival_time = journey["legs"][-1]["destination"]["arrivalTimeEstimated"][11:16]
-
                 train_info.append((journey_no, departure_time, arrival_time))
-
+        
         return train_info, trip_info_dict
 
-def detailed_tree_view(self, screen):
+def detailed_tree_view(screen):
         tree = ttk.Treeview(screen, columns=("Route", "Origin", "Departure", "Destination", "Arrival"), show="headings")
         tree.column("Route",anchor="center", width=50)
         tree.heading("Route", text="Route")
@@ -193,44 +198,43 @@ def detailed_tree_view(self, screen):
 
         return tree
 
-start_time_for_bus_train_stops = time.time()
+start_time_getting_bus_train_data = time.time()
 
 with open('api_key.json') as f:
-    api_key_file = json.load(f)
+        api_key_file = json.load(f)
 
 api_key = api_key_file['API_KEY']
-bus_data = get_gtfs_data(api_key, 'https://api.transport.nsw.gov.au/v1/gtfs/schedule/buses')
-train_data = get_gtfs_data(api_key, 'https://api.transport.nsw.gov.au/v1/gtfs/schedule/sydneytrains')
-parsed_bus_data = parse_gtfs_data(bus_data)
-parsed_train_data = parse_gtfs_data(train_data)
+bus_data = get_gtfs_data(api_key, 'https://api.transport.nsw.gov.au/v1/gtfs/schedule/buses', specific_file="stops.txt")
+train_data = get_gtfs_data(api_key, 'https://api.transport.nsw.gov.au/v1/gtfs/schedule/sydneytrains', specific_file="stops.txt")
+parsed_bus_data = parse_gtfs_data(bus_data, specific_file="stops.txt")
+parsed_train_data = parse_gtfs_data(train_data, specific_file="stops.txt")
 
-bus_counter = 0
+end_time_getting_bus_train_data = time.time()
+print(f"Time taken to get bus and train data: {end_time_getting_bus_train_data - start_time_getting_bus_train_data} seconds")
+
+counter = 0
 bus_stops = {}
-while bus_counter <= len(parsed_bus_data["stops.txt"]) - 1:
-        for key, val in parsed_bus_data["stops.txt"][bus_counter].items():
+while counter <= len(parsed_bus_data["stops.txt"]) - 1:
+        for key, val in parsed_bus_data["stops.txt"][counter].items():
                 if key == "stop_id":
                         stop_id = val
                 if key == "stop_name":
                         stop_name = val
                         bus_stops.update({stop_name:stop_id})
-        bus_counter+=1  
+        counter+=1  
 
-train_counter = 0
+counter1 = 0
 train_stops = {}
-while train_counter <= len(parsed_train_data["stops.txt"]) - 1:
-        for key, val in parsed_train_data["stops.txt"][train_counter].items():
+while counter1 <= len(parsed_train_data["stops.txt"]) - 1:
+        for key, val in parsed_train_data["stops.txt"][counter1].items():
                 if key == "stop_id":
                         station_id = val
                 if key == "stop_name":
                         station_name = val
                         train_stops.update({station_name:station_id})
-        train_counter+=1
+        counter1+=1
 
 all_stops = bus_stops | train_stops
-
-end_time_for_bus_train_stops = time.time()
-
-print(f"Time taken to retrieve bus and train stops: {end_time_for_bus_train_stops - start_time_for_bus_train_stops} seconds")
 
 # START OF GUI CODE
 class gui_handler:
@@ -238,90 +242,87 @@ class gui_handler:
                 self.master = master
                 self.master.title("ViewTrip")
                 ctk.set_default_color_theme("black-red.json")
-
+                
                 self.current_screen = None
-
+                
                 # Start Screen
                 self.show_start_screen()
-
+        
         # CODE FOR FIRST SCREEN
         def show_start_screen(self):
                 if self.current_screen:
                         self.current_screen.destroy()
-
+                
                 start_screen = ctk.CTkFrame(self.master)
                 start_screen.pack(side="top", fill="both", expand=True)
-
+                
                 heading = ctk.CTkLabel(master=start_screen, justify="center", text="ViewTrip", font=("Helvetica", 20, "bold"))
                 heading.pack(side="top", fill="x", pady=10)
-
+                
                 welcome_label = ctk.CTkLabel(master=start_screen, text="Welcome to ViewTrip", font=("Helvetica", 18, "underline"))
                 welcome_label.pack(pady=10)
-
                 welcome_information = ctk.CTkLabel(master=start_screen, text="To get started, press the plus button\n to add a new trip.", font=("Helvetica", 16, "italic"))
                 welcome_information.pack(pady=10)
-
-                start_screen_image = ctk.CTkImage(light_image=Image.open('/Users/manavjain/github-classroom/Baulkhamhills-hs/Manav-Jain-Major-Project/start_screen_logo.png'), dark_image=Image.open('/Users/manavjain/github-classroom/Baulkhamhills-hs/Manav-Jain-Major-Project/start_screen_logo.png'), size=(250, 130))
+                
+                start_screen_image = ctk.CTkImage(light_image=Image.open('start_screen_logo.png'), dark_image=Image.open('start_screen_logo.png'), size=(250, 130))
                 image_label = ctk.CTkLabel(start_screen, text="", image=start_screen_image)
                 image_label.pack(pady=10)
-
+                
                 display_saved_trips_image = ctk.CTkImage(light_image=Image.open('button_images/display-trips_button.png'), dark_image=Image.open('button_images/display-trips_button.png'), size=(170, 45))
                 display_saved_trips = ctk.CTkButton(master=start_screen, image=display_saved_trips_image, text="", command=self.show_display_saved_trips_screen)
                 display_saved_trips.pack(side="bottom", pady=10)
-
+                
                 add_new_trip_button = ctk.CTkImage(light_image=Image.open('button_images/add-new-trips_button.png'), dark_image=Image.open('button_images/add-new-trips_button.png'), size=(75, 45))
                 add_new_trip = ctk.CTkButton(master=start_screen, image=add_new_trip_button, text="", command=lambda: self.show_selection_screen())
                 add_new_trip.pack(side="bottom", pady=10)
-
+                
                 self.current_screen = start_screen
-
+        
         # CODE FOR SECOND SCREEN
         def show_selection_screen(self):
                 if self.current_screen:
                         self.current_screen.destroy()
-
+                
                 selection_screen = ctk.CTkFrame(self.master)
                 selection_screen.pack(padx=10, pady=10)
-
+                
                 ctk.CTkLabel(selection_screen, text="Select Starting Stop:").grid(row=0, column=0, padx=10, pady=10)
-
                 start_stations = list(all_stops.keys())
                 start_station_combobox = AutocompleteCombobox(selection_screen)
                 start_station_combobox.set_completion_list(start_stations)
                 start_station_combobox.grid(row=1, column=0, padx=10, pady=10)
-
+                
                 ctk.CTkLabel(selection_screen, text="Select Destination Stop:").grid(row=2, column=0, padx=10, pady=10)
-
                 destination_stations = list(all_stops.keys())
                 destination_combobox = AutocompleteCombobox(selection_screen)
                 destination_combobox.set_completion_list(destination_stations)
                 destination_combobox.grid(row=3, column=0, padx=10, pady=10)
-
+                
                 ctk.CTkLabel(selection_screen, text="What day would you like to depart?").grid(row=4, column=0, padx=10, pady=10)
                 departure_day_entry = ctk.CTkEntry(selection_screen, placeholder_text="YYYYMMDD")
                 departure_day_entry.grid(row=5, column=0, padx=10, pady=10, columnspan=8)
-
+                
                 ctk.CTkLabel(selection_screen, text="What time would you like to depart?").grid(row=6, column=0, padx=10, pady=10)
                 departure_time_entry = ctk.CTkEntry(selection_screen, placeholder_text="HHDD (24 Hour Time)")
                 departure_time_entry.grid(row=7, column=0, padx=10, pady=10, columnspan=8)
-
+                
                 ctk.CTkLabel(selection_screen, text="How many trip options would you like?").grid(row=8, column=0, padx=10, pady=10)
                 no_of_trips_entry = ctk.CTkEntry(selection_screen, placeholder_text="Enter a number greater than or equal to 1")
                 no_of_trips_entry.grid(row=9, column=0, padx=10, pady=10, columnspan=8)
-
+                
                 def check_validity():
                         origin_valid = False
                         destination_valid = False
                         departure_date_valid = False
                         departure_time_valid = False
                         no_of_trips_valid = False
-
+                        
                         origin_text = start_station_combobox.get()
                         destination_text = destination_combobox.get()
                         departure_day_text = departure_day_entry.get()
                         departure_time_text = departure_time_entry.get()
                         no_of_trips_text = no_of_trips_entry.get()
-
+                        
                         if origin_text and destination_text and departure_day_text and departure_time_text and no_of_trips_text:
                                 if origin_text not in start_stations:
                                         origin_valid = False
@@ -336,25 +337,20 @@ class gui_handler:
                                         no_of_trips_valid = False
                                         messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid number of trips!')
                                         self.show_selection_screen()
-
                                 else:
                                         origin_valid = True
                                         destination_valid = True
                                         no_of_trips_valid = True
-
                                         try:
                                                 datetime.datetime.strptime(departure_day_text, '%Y%m%d')
                                                 departure_date_valid = True
-
                                         except ValueError:
                                                 departure_date_valid = False
                                                 messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid date format!')
                                                 self.show_selection_screen()
-
                                         try:
                                                 datetime.datetime.strptime(departure_time_text, '%H%M')
                                                 departure_time_valid = True
-
                                         except ValueError:
                                                 departure_time_valid = False
                                                 messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid time format!')
@@ -363,11 +359,11 @@ class gui_handler:
                         else:
                                 messagebox.showerror('INVALID INPUT', 'Error: Please enter valid input for all fields!')
                                 self.show_selection_screen()
-
+                        
                         if origin_valid and destination_valid and departure_date_valid and departure_time_valid and no_of_trips_valid:
                                 self.show_train_screen(start_station_combobox.get(), destination_combobox.get(), departure_day_entry.get(), departure_time_entry.get(), int(no_of_trips_entry.get()))
                                 selection_screen.destroy()
-
+                
                 next_button_image = ctk.CTkImage(light_image=Image.open('button_images/next_button.png'), dark_image=Image.open('button_images/next_button.png'), size=(115, 43))
                 next_button = ctk.CTkButton(selection_screen, image=next_button_image, text="", command=check_validity)
                 next_button.grid(row=10, column=0, columnspan=2, pady=10)
@@ -375,20 +371,17 @@ class gui_handler:
                 back_button_image = ctk.CTkImage(light_image=Image.open('button_images/back_button.png'), dark_image=Image.open('button_images/back_button.png'), size=(115, 43))
                 back_button = ctk.CTkButton(selection_screen, image=back_button_image, text="", command=self.show_start_screen)
                 back_button.grid(row=11, column=0, columnspan=2, pady=10)
-
+                
                 self.current_screen = selection_screen
-
+        
         # CODE FOR THIRD SCREEN
         def show_train_screen(self, start_station, destination_station, departure_day, departure_time, no_of_trips):
                 if self.current_screen:
                         self.current_screen.destroy()
-
-
+                
                 train_screen = tk.Frame(self.master)
                 train_screen.pack(padx=10, pady=10)
-
                 ctk.CTkLabel(train_screen, text=f"Trips from {start_station}").grid(row=0, column=0, pady=10)
-
                 tree = ttk.Treeview(train_screen, columns=("Journey", "Departure", "Arrival"), show="headings")
                 tree.column("Journey",anchor="center", width=95)
                 tree.heading("Journey", text="Journey")
@@ -397,7 +390,7 @@ class gui_handler:
                 tree.column("Arrival",anchor="center", width=95)
                 tree.heading("Arrival", text="Arrival")
                 tree.grid(row=1, column=0, columnspan=2, pady=10)
-
+                
                 # Handler for item click event
                 def on_item_click(event):
                         item_id = tree.focus()  # Get the ID of the clicked item
@@ -405,33 +398,31 @@ class gui_handler:
                                 item_values = tree.item(item_id, "values")
                                 if item_values:
                                         self.show_detailed_journey_info_screen(trip_info_dict, item_values, start_station, destination_station, departure_day, departure_time, no_of_trips)
-
-
+                
                 tree.bind("<ButtonRelease-1>", on_item_click)
-
+                
                 start_stop_id = all_stops[start_station][1:]
                 destination_stop_id = all_stops[destination_station][1:]
-                train_info, trip_info_dict = get_train_info(start_station, destination_station, departure_day, departure_time, no_of_trips)
-
+                train_info, trip_info_dict = get_train_info(api_key, start_stop_id, destination_stop_id, departure_day, departure_time, no_of_trips)
+                
                 for train in train_info:
                         tree.insert("", "end", values=train)
                 
                 back_button_image = ctk.CTkImage(light_image=Image.open('button_images/back_button.png'), dark_image=Image.open('button_images/back_button.png'), size=(115, 43))
                 back_button = ctk.CTkButton(train_screen, image=back_button_image, text="", command=self.show_selection_screen)
                 back_button.grid(row=2, column=0, pady=10)
-
+                
                 self.current_screen = train_screen
-
-
+        
         def show_detailed_journey_info_screen(self, trip_info_dict, treeview_values, start_station, destination_station, departure_day, departure_time, no_of_trips):
                 if self.current_screen:
                         self.current_screen.destroy()
-
+                
                 detailed_journey_screen = tk.Frame(self.master)
                 detailed_journey_screen.pack(padx=10, pady=10)
-
+                
                 tree = detailed_tree_view(detailed_journey_screen)
-
+                
                 # Handler for item click event
                 def on_item_click(event):
                         item_id = tree.focus()  # Get the ID of the clicked item
@@ -440,9 +431,9 @@ class gui_handler:
                                 detailed_information = ctk.CTkLabel(detailed_journey_screen, text=(f"Route: {item_values[0]}\n Origin: {item_values[1]}\n Departure: {item_values[2]}\n Destination: {item_values[3]}\n Arrival: {item_values[4]}"))
                                 detailed_information.grid(pady=10, padx=0)
                                 detailed_journey_screen.after(3000, detailed_information.destroy)
-
+                
                 tree.bind("<ButtonRelease-1>", on_item_click)
-
+                
                 train_info = []
                 coords = {}
                 journey_index = int(treeview_values[0]) - 1
@@ -458,21 +449,21 @@ class gui_handler:
                 # Create a map centered at the mean latitude and longitude of the coordinates
                 map_center = [sum(coord[0] for coord in coords.values()) / len(coords.values()),
                         sum(coord[1] for coord in coords.values()) / len(coords.values())]
-
+                
                 # Create the map
                 m = folium.Map(location=map_center, zoom_start=4)
-
+                
                 # Add markers for each coordinate
                 for name, coord in coords.items():
                         folium.Marker(location=coord, popup=name).add_to(m)
-
+                
                 # Create an AntPath to represent the transport route
                 ant_path = plugins.AntPath(locations=coords.values(), color='blue')
                 m.add_child(ant_path)
-
+                
                 # Save the map to an HTML file
                 m.save('route_map.html')       
-
+                
                 for key,val in trip_info_dict["journeys"][journey_index].items():
                         if key == "legs":
                                 legs = val
@@ -486,12 +477,10 @@ class gui_handler:
                                         departure = leg["origin"]["departureTimeEstimated"][11:16]
                                         destination = leg["destination"]["name"]
                                         arrival = leg["destination"]["arrivalTimeEstimated"][11:16]
-
                                         # Append train information to the list
                                         train_info.append((transport, origin, departure, destination, arrival))
-
                                 journey_index +=1
-
+                
                 for train in train_info:
                         tree.insert("", "end", values=train)
                 
@@ -500,40 +489,41 @@ class gui_handler:
                         train_json = json.dumps(train_info)
                         redis_connection.set(trip_id, train_json)
                         self.show_start_screen()
-
+                
                 # Back button to return to the previous screen
                 back_button_image = ctk.CTkImage(light_image=Image.open('button_images/back_button.png'), dark_image=Image.open('button_images/back_button.png'), size=(115, 43))
                 back_button = ctk.CTkButton(detailed_journey_screen, image=back_button_image, text="", command=lambda: self.show_train_screen(start_station, destination_station, departure_day, departure_time, no_of_trips))
                 back_button.grid(row=2, column=0, pady=10, padx=5)
-
+                
                 save_trip_button_image = ctk.CTkImage(light_image=Image.open('button_images/save-trip_button.png'), dark_image=Image.open('button_images/save-trip_button.png'), size=(115, 43))
                 save_trip_button = ctk.CTkButton(detailed_journey_screen, image=save_trip_button_image, text="", command=save_trip)
-                save_trip_button.grid(row=2, column=2, pady=10, padx=5)
-
+                save_trip_button.grid(row=3, column=0, pady=10, padx=5)
+                
                 self.current_screen = detailed_journey_screen
-
+        
         def show_display_saved_trips_screen(self):
                 if self.current_screen:
                         self.current_screen.destroy()
-
+                
                 display_saved_trips_screen = tk.Frame(self.master)
                 display_saved_trips_screen.pack(padx=10, pady=10)
-
+                
                 all_keys = redis_connection.keys()
-
+                
                 if all_keys == []:
                         ctk.CTkLabel(master=display_saved_trips_screen, text="Save a trip first").grid(pady=10)
+                        
                         def show_start_screen():
                                 self.show_start_screen()
                                 display_saved_trips_screen.destroy()
+                        
                         display_saved_trips_screen.after(3000, show_start_screen)
-
                 else:
                         trips_tree = ttk.Treeview(display_saved_trips_screen, columns=("Trip"), show="headings")
                         trips_tree.column("Trip",anchor="center", width=300)
                         trips_tree.heading("Trip", text="Trip")
                         trips_tree.grid(row=1, column=0, columnspan=5, pady=10)
-
+                        
                         for key in all_keys:
                                 key_str = key.decode('utf-8')
                                 trips_tree.insert("", "end", text=key_str, values=(key_str,))
@@ -545,28 +535,28 @@ class gui_handler:
                                         item_values = trips_tree.item(item_id, "values")
                                         if item_values:
                                                 self.show_saved_trip_detailed_screen(item_values)
-
+                        
                         trips_tree.bind("<ButtonRelease-1>", on_item_click)
                         
                         back_button_image = ctk.CTkImage(light_image=Image.open('button_images/back_button.png'), dark_image=Image.open('button_images/back_button.png'), size=(115, 43))
                         back_button = ctk.CTkButton(master=display_saved_trips_screen, text="", image=back_button_image, command=self.show_start_screen)
                         back_button.grid(row=2, column=0, columnspan=2, pady=10)
-
+                        
                         self.current_screen = display_saved_trips_screen
-
+        
         def show_saved_trip_detailed_screen(self, treeview_values):
                 if self.current_screen:
                         self.current_screen.destroy()
-
+                
                 saved_trip_detailed_screen = tk.Frame(self.master)
                 saved_trip_detailed_screen.pack(padx=10, pady=10)
-
+                
                 detailed_trips_tree = detailed_tree_view(saved_trip_detailed_screen)
-
+                
                 desired_value = redis_connection.get(treeview_values[0])
                 decoded_desired_value = desired_value.decode("utf-8")
                 list_of_desired_values = json.loads(decoded_desired_value)
-                
+
                 midpoint = int(len(all_stops)/2)
                 print(all_stops[:midpoint])
 
@@ -578,7 +568,7 @@ class gui_handler:
                 current_date = datetime.datetime.now().strftime("%Y%m%d")
                 current_time = datetime.datetime.now().strftime("%H%M")
 
-                train_info, trip_info_dict = get_train_info(origin_station, destination_station, current_date, current_time, 1)
+                train_info, trip_info_dict = get_train_info(api_key, origin_station, destination_station, current_date, current_time, 1)
 
                 train_info = []
                 for key,val in trip_info_dict["journeys"][0].items():
@@ -603,6 +593,9 @@ class gui_handler:
                 for train in train_info:
                         detailed_trips_tree.insert("", "end", values=train)
                 
+                for value in list_of_desired_values:
+                        detailed_trips_tree.insert("", "end", values=value)
+
                 # Handler for item click event
                 def on_item_click(event):
                         item_id = detailed_trips_tree.focus()  # Get the ID of the clicked item
@@ -611,16 +604,16 @@ class gui_handler:
                                 detailed_information = ctk.CTkLabel(saved_trip_detailed_screen, text=(f"Route: {item_values[0]}\n Origin: {item_values[1]}\n Departure: {item_values[2]}\n Destination: {item_values[3]}\n Arrival: {item_values[4]}"))
                                 detailed_information.grid(pady=10, padx=0)
                                 saved_trip_detailed_screen.after(3000, detailed_information.destroy)
-
+                
                 detailed_trips_tree.bind("<ButtonRelease-1>", on_item_click)
                 
                 back_button_image = ctk.CTkImage(light_image=Image.open('button_images/back_button.png'), dark_image=Image.open('button_images/back_button.png'), size=(115, 43))
                 back_button = ctk.CTkButton(master=saved_trip_detailed_screen, text="", image=back_button_image, command=self.show_display_saved_trips_screen)
                 back_button.grid(row=2, column=0, columnspan=2, pady=10)
-
+                
                 self.current_screen = saved_trip_detailed_screen
-
-def main():
+    
+def main():        
         # Play the startup sound
         pygame.mixer.music.load("startup_sound.mp3")
         pygame.mixer.music.play()
@@ -629,15 +622,14 @@ def main():
         root.wm_geometry("300x650")
         root.resizable(True, False)
         main = gui_handler(root)
-
         def on_closing():
                 redis_connection.flushdb()
                 redis_connection.close()
                 root.destroy()
         
         root.protocol("WM_DELETE_WINDOW", on_closing)
-
         root.mainloop()
-
+        
+        
 if __name__ == "__main__":
         main()
