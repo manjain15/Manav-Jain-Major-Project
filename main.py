@@ -79,12 +79,16 @@ class AutocompleteCombobox(ttk.Combobox):
 # CODE FOR PARSING SYDNEYTRAINS AND BUSES API
 quoted_string_pattern = re.compile(r'"([^"]*?)"(?:,|$)')
 
-def get_gtfs_data(api_key, api_url):
+def get_gtfs_data(api_key, api_url, file_name):
     headers = {'Authorization': f'apikey {api_key}'}
     try:
         with requests.get(api_url, headers=headers, stream=True) as response:
             with zipfile.ZipFile(io.BytesIO(response.content)) as zip_file:
-                return {file_name: zip_file.read(file_name).decode("utf-8") for file_name in zip_file.namelist()}
+                if file_name in zip_file.namelist():
+                    return zip_file.read(file_name).decode("utf-8")
+                else:
+                    print(f"File '{file_name}' not found in the zip folder.")
+                    return None
     except zipfile.BadZipFile as e:
         print(f"Error reading ZIP file: {e}")
         return None
@@ -92,24 +96,20 @@ def get_gtfs_data(api_key, api_url):
         print(f"Error: {e}")
         return None
 
-def parse_gtfs_data(data):
-    if data is None:
+def parse_gtfs_data(file_content, file_name):
+    if file_content is None:
         return None
 
     parsed_data = {}
     quoted_string_pattern = re.compile(r'"([^"]*?)"(?:,|$)')
 
-    for file_name, file_content in data.items():
-        header, *rows = file_content.split('\n')
-        header = [match.group(1) for match in quoted_string_pattern.finditer(header)]
-        file_name_without_extension = file_name.split('.')[0]
-        file_id_header = f"{file_name_without_extension[:-1]}_id"
-        if file_id_header not in header:
-            header.insert(0, file_id_header)
+    header, *rows = file_content.split('\n')
+    header = [match.group(1) for match in quoted_string_pattern.finditer(header)]
 
-        csv_reader = csv.reader(rows)
-        rows_data = [dict(zip(header, row)) for row in csv_reader]
-        parsed_data[file_name] = rows_data
+    csv_reader = csv.reader(rows)
+    rows_data = [dict(zip(header, row)) for row in csv_reader]
+
+    parsed_data[file_name] = rows_data
 
     return parsed_data
 
@@ -188,16 +188,16 @@ def detailed_tree_view(self, screen):
 
         return tree
 
-start_time_for_bus_train_stops = time.time()
+start_time_for_getting_bus_train_data = time.time()
 
 with open('api_key.json') as f:
     api_key_file = json.load(f)
 
 api_key = api_key_file['API_KEY']
-bus_data = get_gtfs_data(api_key, 'https://api.transport.nsw.gov.au/v1/gtfs/schedule/buses')
-train_data = get_gtfs_data(api_key, 'https://api.transport.nsw.gov.au/v1/gtfs/schedule/sydneytrains')
-parsed_bus_data = parse_gtfs_data(bus_data)
-parsed_train_data = parse_gtfs_data(train_data)
+bus_data = get_gtfs_data(api_key, 'https://api.transport.nsw.gov.au/v1/gtfs/schedule/buses', "stops.txt")
+train_data = get_gtfs_data(api_key, 'https://api.transport.nsw.gov.au/v1/gtfs/schedule/sydneytrains', "stops.txt")
+parsed_bus_data = parse_gtfs_data(bus_data, "stops.txt")
+parsed_train_data = parse_gtfs_data(train_data, "stops.txt")
 
 bus_counter = 0
 bus_stops = {}
@@ -223,9 +223,8 @@ while train_counter <= len(parsed_train_data["stops.txt"]) - 1:
 
 all_stops = bus_stops | train_stops
 
-end_time_for_bus_train_stops = time.time()
-
-print(f"Time taken to retrieve bus and train stops: {end_time_for_bus_train_stops - start_time_for_bus_train_stops} seconds")
+end_time_for_getting_bus_train_data = time.time()
+print(f"Time taken to get bus and train data: {end_time_for_getting_bus_train_data - start_time_for_getting_bus_train_data} seconds")
 
 # START OF GUI CODE
 class gui_handler:
