@@ -77,44 +77,48 @@ class AutocompleteCombobox(ttk.Combobox):
                         self.autocomplete()
 
 # CODE FOR PARSING SYDNEYTRAINS AND BUSES API
-quoted_string_pattern = re.compile(r'"([^"]*?)"(?:,|$)')
-
-def get_gtfs_data(api_key, api_url, file_name):
+def get_gtfs_data(api_key, api_url):
     headers = {'Authorization': f'apikey {api_key}'}
-    try:
-        with requests.get(api_url, headers=headers, stream=True) as response:
-            with zipfile.ZipFile(io.BytesIO(response.content)) as zip_file:
-                if file_name in zip_file.namelist():
-                    return zip_file.read(file_name).decode("utf-8")
-                else:
-                    print(f"File '{file_name}' not found in the zip folder.")
-                    return None
-    except zipfile.BadZipFile as e:
-        print(f"Error reading ZIP file: {e}")
-        return None
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
+    response = requests.get(api_url, headers=headers)
+    if response.status_code == 200:
+        content_type = response.headers.get('Content-Type')
+        if content_type or 'application/octet-stream' in content_type:
+            try:
+                with zipfile.ZipFile(io.BytesIO(response.content)) as zip_file:
+                    return {file_name: zip_file.read(file_name).decode("utf-8") for file_name in zip_file.namelist()}
+            except Exception as e:
+                print(f"Error reading ZIP file: {e}")
+        else:
+            print("Unexpected content type. Expected 'application/octet-stream'.")
+    else:
+        print(f"API request failed with status code: {response.status_code}")
+    
+    return None
 
-def parse_gtfs_data(file_content, file_name):
-    if file_content is None:
+def parse_gtfs_data(data):
+    if data is None:
         return None
-
     parsed_data = {}
     quoted_string_pattern = re.compile(r'"([^"]*?)"(?:,|$)')
-
-    header, *rows = file_content.split('\n')
-    header = [match.group(1) for match in quoted_string_pattern.finditer(header)]
-
-    csv_reader = csv.reader(rows)
-    rows_data = [dict(zip(header, row)) for row in csv_reader]
-
-    parsed_data[file_name] = rows_data
-
+    for file_name, file_content in data.items():
+        lines = file_content.split('\n')
+        # Skip the header row
+        header_line = lines[0].strip('"').strip('\r')
+        header = [match.group(1) for match in quoted_string_pattern.finditer(header_line)]
+        if not header:
+            header = [part.strip() for part in header_line.split(',') if part.strip()]
+        file_name_without_extension = file_name.split('.')[0]
+        file_id_header = f"{file_name_without_extension[:-1]}_id"
+        if file_id_header not in header:
+            header.insert(0, file_id_header)
+        # Process rows excluding the header
+        rows_data = [dict(zip(header, re.split('","|,",|,"|,"', row))) for row in lines[1:]]
+        cleaned_rows = [{key: value for key, value in row.items() if value is not None} for row in rows_data]
+        parsed_data[file_name] = cleaned_rows
     return parsed_data
 
 # CODE TO RETRIEVE PARSED DATA FROM TNSW API
-def get_train_info(self, start_station, destination_station, departure_day, departure_time, no_of_trips):
+def get_train_info(start_station, destination_station, departure_day, departure_time, no_of_trips):
         
         train_info = []
 
@@ -127,6 +131,7 @@ def get_train_info(self, start_station, destination_station, departure_day, depa
                         if response.status_code == 200:
                                 # Parse the JSON response into a dictionary
                                 data_dict = response.json()
+                                print(response.text)
                                 return data_dict
                         else:
                                 print(f"Error: {response.status_code} - {response.text}")
@@ -194,10 +199,10 @@ with open('api_key.json') as f:
     api_key_file = json.load(f)
 
 api_key = api_key_file['API_KEY']
-bus_data = get_gtfs_data(api_key, 'https://api.transport.nsw.gov.au/v1/gtfs/schedule/buses', "stops.txt")
-train_data = get_gtfs_data(api_key, 'https://api.transport.nsw.gov.au/v1/gtfs/schedule/sydneytrains', "stops.txt")
-parsed_bus_data = parse_gtfs_data(bus_data, "stops.txt")
-parsed_train_data = parse_gtfs_data(train_data, "stops.txt")
+bus_data = get_gtfs_data(api_key, 'https://api.transport.nsw.gov.au/v1/gtfs/schedule/buses')
+train_data = get_gtfs_data(api_key, 'https://api.transport.nsw.gov.au/v1/gtfs/schedule/sydneytrains')
+parsed_bus_data = parse_gtfs_data(bus_data)
+parsed_train_data = parse_gtfs_data(train_data)
 
 bus_counter = 0
 bus_stops = {}
@@ -406,7 +411,7 @@ class gui_handler:
 
                 start_stop_id = all_stops[start_station][1:]
                 destination_stop_id = all_stops[destination_station][1:]
-                train_info, trip_info_dict = get_train_info(start_stop_id, destination_stop_id, departure_day, departure_time, no_of_trips)
+                train_info, trip_info_dict = get_train_info(start_station, destination_station, departure_day, departure_time, no_of_trips)
 
                 for train in train_info:
                         tree.insert("", "end", values=train)

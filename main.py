@@ -84,11 +84,7 @@ def get_gtfs_data(api_key, api_url, file_name):
     try:
         with requests.get(api_url, headers=headers, stream=True) as response:
             with zipfile.ZipFile(io.BytesIO(response.content)) as zip_file:
-                if file_name in zip_file.namelist():
-                    return zip_file.read(file_name).decode("utf-8")
-                else:
-                    print(f"File '{file_name}' not found in the zip folder.")
-                    return None
+                return zip_file.read(file_name).decode("utf-8")
     except zipfile.BadZipFile as e:
         print(f"Error reading ZIP file: {e}")
         return None
@@ -114,9 +110,11 @@ def parse_gtfs_data(file_content, file_name):
     return parsed_data
 
 # CODE TO RETRIEVE PARSED DATA FROM TNSW API
-def get_train_info(self, start_station, destination_station, departure_day, departure_time, no_of_trips):
+def get_train_info(start_station, destination_station, departure_day, departure_time, no_of_trips):
         
         train_info = []
+        print(start_station)
+        print(destination_station)
 
         def parse_api_response_to_dict(api_url, params, headers):
                 try:
@@ -127,6 +125,7 @@ def get_train_info(self, start_station, destination_station, departure_day, depa
                         if response.status_code == 200:
                                 # Parse the JSON response into a dictionary
                                 data_dict = response.json()
+                                print(response.text)
                                 return data_dict
                         else:
                                 print(f"Error: {response.status_code} - {response.text}")
@@ -172,7 +171,7 @@ def get_train_info(self, start_station, destination_station, departure_day, depa
 
         return train_info, trip_info_dict
 
-def detailed_tree_view(self, screen):
+def detailed_tree_view(screen):
         tree = ttk.Treeview(screen, columns=("Route", "Origin", "Departure", "Destination", "Arrival"), show="headings")
         tree.column("Route",anchor="center", width=50)
         tree.heading("Route", text="Route")
@@ -405,7 +404,7 @@ class gui_handler:
 
                 start_stop_id = all_stops[start_station][1:]
                 destination_stop_id = all_stops[destination_station][1:]
-                train_info, trip_info_dict = get_train_info(start_stop_id, destination_stop_id, departure_day, departure_time, no_of_trips)
+                train_info, trip_info_dict = get_train_info(start_station, destination_station, departure_day, departure_time, no_of_trips)
 
                 for train in train_info:
                         tree.insert("", "end", values=train)
