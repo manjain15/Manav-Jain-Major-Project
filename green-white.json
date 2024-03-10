@@ -141,7 +141,7 @@
       "macOS": {
         "family": "Sans-Serif",
         "size": 13,
-        "weight": "normal"
+        "weight": "bold"
       },
       "Windows": {
         "family": "Roboto",

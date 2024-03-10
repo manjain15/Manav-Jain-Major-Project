@@ -140,6 +140,7 @@ def get_train_info(api_key, start_station, destination_station, departure_day, d
                         if response.status_code == 200:
                                 # Parse the JSON response into a dictionary
                                 data_dict = response.json()
+                                print(response.text)
                                 return data_dict
                         else:
                                 print(f"Error: {response.status_code} - {response.text}")
@@ -380,10 +381,10 @@ class gui_handler:
 
                 ctk.CTkLabel(train_screen, text=f"Trips from {start_station}").grid(row=0, column=0, pady=10)
 
-                # Define custom style
+                # Define custom style (not working)
                 style = ttk.Style()
-                style.theme_use("clam")  # Use a predefined theme to ensure consistent appearance
                 style.configure("Custom.Treeview", background="F5F5F5")  # Set background color for the entire Treeview
+                style.configure("Custom.Treeview.Heading", background="F5F5F5")  # Set background color for the headers
 
                 tree = ttk.Treeview(train_screen, columns=("Journey", "Departure", "Arrival"), show="headings", style="Custom.Treeview")
                 tree.column("Journey",anchor="center", width=95)
@@ -421,7 +422,7 @@ class gui_handler:
                         self.current_screen.destroy()
                 
                 detailed_journey_screen = ctk.CTkFrame(self.master)
-                detailed_journey_screen.pack(padx=10, pady=10)
+                detailed_journey_screen.pack(fill="both", expand=True, padx=10, pady=10)
                 
                 tree = detailed_tree_view(detailed_journey_screen)
                 
@@ -439,6 +440,7 @@ class gui_handler:
                 train_info = []
                 coords = {}
                 journey_index = int(treeview_values[0]) - 1
+                original_journey_index = journey_index
                 for leg in trip_info_dict["journeys"][journey_index]["legs"]:
                         for key,val in leg.items():
                                 if key == "stopSequence":
@@ -486,8 +488,14 @@ class gui_handler:
                 for train in train_info:
                         tree.insert("", "end", values=train)
                 
+                global origin_a
+                origin_a = trip_info_dict["journeys"][original_journey_index]["legs"][0]["origin"]["name"]
+                
+                global destination_a
+                destination_a = trip_info_dict["journeys"][original_journey_index]["legs"][-1]["destination"]["name"]
+
                 def save_trip():
-                        trip_id = f"{origin} to {destination}"
+                        trip_id = f"{origin_a} to {destination_a}"
                         train_json = json.dumps(train_info)
                         redis_connection.set(trip_id, train_json)
                         self.show_start_screen()
@@ -506,7 +514,7 @@ class gui_handler:
                         self.current_screen.destroy()
                 
                 display_saved_trips_screen = ctk.CTkFrame(self.master)
-                display_saved_trips_screen.pack(padx=10, pady=10)
+                display_saved_trips_screen.pack(fill="both", expand=True, padx=10, pady=10)
                 
                 all_keys = redis_connection.keys()
                 
@@ -548,7 +556,7 @@ class gui_handler:
                         self.current_screen.destroy()
                 
                 saved_trip_detailed_screen = ctk.CTkFrame(self.master)
-                saved_trip_detailed_screen.pack(padx=10, pady=10)
+                saved_trip_detailed_screen.pack(fill="both", expand=True, padx=10, pady=10)
                 
                 detailed_trips_tree = detailed_tree_view(saved_trip_detailed_screen)
                 
@@ -556,18 +564,23 @@ class gui_handler:
                 decoded_desired_value = desired_value.decode("utf-8")
                 list_of_desired_values = json.loads(decoded_desired_value)
 
-                midpoint = int(len(all_stops)/2)
-                print(all_stops[:midpoint])
-
                 # Collating data to call get_train_info function again
-                origin = list_of_desired_values[0][1]
-                origin_station = all_stops.get(origin)
-                destination = list_of_desired_values[-1][3]
-                destination_station = all_stops.get(destination)
+                # origin = list_of_desired_values[0][1]
+                # print(origin)
+                # origin_station = all_stops.get(origin)
+                # print(origin_station)
+
+                # Issue is that the station/stop name is including suburb after the name which is not what is stored wihtin "all_stops" dictionary so code is returning none value for origin and destination station/stop which is why API call is returning error
+
+                # destination = list_of_desired_values[-1][3]
+                # print(destination)
+                # destination_station = all_stops.get(destination)
+                # print(destination_station)
+
                 current_date = datetime.datetime.now().strftime("%Y%m%d")
                 current_time = datetime.datetime.now().strftime("%H%M")
 
-                train_info, trip_info_dict = get_train_info(api_key, origin_station, destination_station, current_date, current_time, 1)
+                train_info, trip_info_dict = get_train_info(api_key, origin_a, destination_a, current_date, current_time, 1)
 
                 train_info = []
                 for key,val in trip_info_dict["journeys"][0].items():
@@ -613,8 +626,8 @@ class gui_handler:
     
 def main():        
         # Play the startup sound
-        pygame.mixer.music.load("startup_sound.mp3")
-        pygame.mixer.music.play()
+        # pygame.mixer.music.load("startup_sound.mp3")
+        # pygame.mixer.music.play()
 
         root = tk.Tk()
         root.wm_geometry("300x650")
