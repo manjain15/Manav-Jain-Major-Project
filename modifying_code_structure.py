@@ -140,7 +140,6 @@ def get_train_info(api_key, start_station, destination_station, departure_day, d
                         if response.status_code == 200:
                                 # Parse the JSON response into a dictionary
                                 data_dict = response.json()
-                                print(response.text)
                                 return data_dict
                         else:
                                 print(f"Error: {response.status_code} - {response.text}")
@@ -405,8 +404,12 @@ class gui_handler:
                 
                 tree.bind("<ButtonRelease-1>", on_item_click)
                 
+                global start_stop_id
                 start_stop_id = all_stops[start_station][1:]
+
+                global destination_stop_id
                 destination_stop_id = all_stops[destination_station][1:]
+
                 train_info, trip_info_dict = get_train_info(api_key, start_stop_id, destination_stop_id, departure_day, departure_time, no_of_trips)
                 
                 for train in train_info:
@@ -488,14 +491,11 @@ class gui_handler:
                 for train in train_info:
                         tree.insert("", "end", values=train)
                 
-                global origin_a
-                origin_a = trip_info_dict["journeys"][original_journey_index]["legs"][0]["origin"]["name"]
-                
-                global destination_a
-                destination_a = trip_info_dict["journeys"][original_journey_index]["legs"][-1]["destination"]["name"]
+                origin = trip_info_dict["journeys"][original_journey_index]["legs"][0]["origin"]["name"]
+                destination = trip_info_dict["journeys"][original_journey_index]["legs"][-1]["destination"]["name"]
 
                 def save_trip():
-                        trip_id = f"{origin_a} to {destination_a}"
+                        trip_id = f"{origin} to {destination}"
                         train_json = json.dumps(train_info)
                         redis_connection.set(trip_id, train_json)
                         self.show_start_screen()
@@ -564,23 +564,10 @@ class gui_handler:
                 decoded_desired_value = desired_value.decode("utf-8")
                 list_of_desired_values = json.loads(decoded_desired_value)
 
-                # Collating data to call get_train_info function again
-                # origin = list_of_desired_values[0][1]
-                # print(origin)
-                # origin_station = all_stops.get(origin)
-                # print(origin_station)
-
-                # Issue is that the station/stop name is including suburb after the name which is not what is stored wihtin "all_stops" dictionary so code is returning none value for origin and destination station/stop which is why API call is returning error
-
-                # destination = list_of_desired_values[-1][3]
-                # print(destination)
-                # destination_station = all_stops.get(destination)
-                # print(destination_station)
-
                 current_date = datetime.datetime.now().strftime("%Y%m%d")
                 current_time = datetime.datetime.now().strftime("%H%M")
 
-                train_info, trip_info_dict = get_train_info(api_key, origin_a, destination_a, current_date, current_time, 1)
+                train_info, trip_info_dict = get_train_info(api_key, start_stop_id, destination_stop_id, current_date, current_time, 3)
 
                 train_info = []
                 for key,val in trip_info_dict["journeys"][0].items():
@@ -600,13 +587,8 @@ class gui_handler:
                                         # Append train information to the list
                                         train_info.append((transport, origin, departure, destination, arrival))
 
-                                journey_index +=1
-
                 for train in train_info:
                         detailed_trips_tree.insert("", "end", values=train)
-                
-                for value in list_of_desired_values:
-                        detailed_trips_tree.insert("", "end", values=value)
 
                 # Handler for item click event
                 def on_item_click(event):
@@ -626,12 +608,12 @@ class gui_handler:
     
 def main():        
         # Play the startup sound
-        # pygame.mixer.music.load("startup_sound.mp3")
-        # pygame.mixer.music.play()
+        pygame.mixer.music.load("startup_sound.mp3")
+        pygame.mixer.music.play()
 
         root = tk.Tk()
         root.wm_geometry("300x650")
-        root.resizable(True, False)
+        root.resizable(True, True)
         main = gui_handler(root)
         def on_closing():
                 redis_connection.flushdb()
