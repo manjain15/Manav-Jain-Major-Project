@@ -33,8 +33,8 @@
       "border_width": 2,
       "fg_color": "#6a6a6a",
       "border_color": "#D3D3D3",
-      "text_color": "#222222",
-      "placeholder_text_color": "#222222"
+      "text_color": "#FFFFFF",
+      "placeholder_text_color": "#FFFFFF"
     },
     "CTkCheckBox": {
       "corner_radius": 6,

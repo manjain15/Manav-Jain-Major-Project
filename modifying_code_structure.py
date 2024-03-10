@@ -282,7 +282,7 @@ class gui_handler:
                         self.current_screen.destroy()
                 
                 selection_screen = ctk.CTkFrame(self.master)
-                selection_screen.pack(padx=10, pady=10)
+                selection_screen.pack(fill='both', expand=True, padx=10, pady=10)
                 
                 ctk.CTkLabel(selection_screen, text="Select Starting Stop:").grid(row=0, column=0, padx=10, pady=10)
                 start_stations = list(all_stops.keys())
@@ -375,10 +375,17 @@ class gui_handler:
                 if self.current_screen:
                         self.current_screen.destroy()
                 
-                train_screen = tk.Frame(self.master)
-                train_screen.pack(padx=10, pady=10)
+                train_screen = ctk.CTkFrame(self.master)
+                train_screen.pack(fill="both", expand=True, padx=10, pady=10)
+
                 ctk.CTkLabel(train_screen, text=f"Trips from {start_station}").grid(row=0, column=0, pady=10)
-                tree = ttk.Treeview(train_screen, columns=("Journey", "Departure", "Arrival"), show="headings")
+
+                # Define custom style
+                style = ttk.Style()
+                style.theme_use("clam")  # Use a predefined theme to ensure consistent appearance
+                style.configure("Custom.Treeview", background="F5F5F5")  # Set background color for the entire Treeview
+
+                tree = ttk.Treeview(train_screen, columns=("Journey", "Departure", "Arrival"), show="headings", style="Custom.Treeview")
                 tree.column("Journey",anchor="center", width=95)
                 tree.heading("Journey", text="Journey")
                 tree.column("Departure",anchor="center", width=95)
@@ -404,8 +411,7 @@ class gui_handler:
                 for train in train_info:
                         tree.insert("", "end", values=train)
                 
-                back_button_image = ctk.CTkImage(light_image=Image.open('button_images/back_button.png'), dark_image=Image.open('button_images/back_button.png'), size=(115, 43))
-                back_button = ctk.CTkButton(train_screen, image=back_button_image, text="", command=self.show_selection_screen)
+                back_button = ctk.CTkButton(train_screen, text="Back", command=self.show_selection_screen)
                 back_button.grid(row=2, column=0, pady=10)
                 
                 self.current_screen = train_screen
@@ -414,7 +420,7 @@ class gui_handler:
                 if self.current_screen:
                         self.current_screen.destroy()
                 
-                detailed_journey_screen = tk.Frame(self.master)
+                detailed_journey_screen = ctk.CTkFrame(self.master)
                 detailed_journey_screen.pack(padx=10, pady=10)
                 
                 tree = detailed_tree_view(detailed_journey_screen)
@@ -499,7 +505,7 @@ class gui_handler:
                 if self.current_screen:
                         self.current_screen.destroy()
                 
-                display_saved_trips_screen = tk.Frame(self.master)
+                display_saved_trips_screen = ctk.CTkFrame(self.master)
                 display_saved_trips_screen.pack(padx=10, pady=10)
                 
                 all_keys = redis_connection.keys()
@@ -541,7 +547,7 @@ class gui_handler:
                 if self.current_screen:
                         self.current_screen.destroy()
                 
-                saved_trip_detailed_screen = tk.Frame(self.master)
+                saved_trip_detailed_screen = ctk.CTkFrame(self.master)
                 saved_trip_detailed_screen.pack(padx=10, pady=10)
                 
                 detailed_trips_tree = detailed_tree_view(saved_trip_detailed_screen)
