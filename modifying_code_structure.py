@@ -575,8 +575,8 @@ class gui_handler:
                 
                 detailed_trips_tree = detailed_tree_view(saved_trip_detailed_screen)
 
-                current_date = datetime.datetime.now().strftime("%Y%m%d")
-                current_time = datetime.datetime.now().strftime("%H%M")
+                current_date = datetime.now().strftime("%Y%m%d")
+                current_time = datetime.now().strftime("%H%M")
 
                 # Convert to UTC
                 converted_date, converted_time = add_hours_to_sydney_time(current_date, current_time)
