@@ -13,6 +13,8 @@ import re
 import redislite
 import json
 import datetime
+from datetime import datetime, timedelta
+import pytz
 from PIL import Image
 import folium
 from folium import plugins
@@ -198,6 +200,16 @@ def detailed_tree_view(screen):
 
         return tree
 
+def add_hours_to_sydney_time(date_str, time_str):
+    # Convert input strings to datetime object
+    sydney_time = datetime.strptime(date_str + time_str, '%Y%m%d%H%M')
+    
+    # Add 11 hours to Sydney time
+    sydney_time += timedelta(hours=11)
+    
+    # Return the result in the same format
+    return sydney_time.strftime('%Y%m%d'), sydney_time.strftime('%H%M')
+
 start_time_getting_bus_train_data = time.time()
 
 with open('api_key.json') as f:
@@ -340,14 +352,14 @@ class gui_handler:
                                         destination_valid = True
                                         no_of_trips_valid = True
                                         try:
-                                                datetime.datetime.strptime(departure_day_text, '%Y%m%d')
+                                                datetime.strptime(departure_day_text, '%Y%m%d')
                                                 departure_date_valid = True
                                         except ValueError:
                                                 departure_date_valid = False
                                                 messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid date format!')
                                                 self.show_selection_screen()
                                         try:
-                                                datetime.datetime.strptime(departure_time_text, '%H%M')
+                                                datetime.strptime(departure_time_text, '%H%M')
                                                 departure_time_valid = True
                                         except ValueError:
                                                 departure_time_valid = False
@@ -410,7 +422,10 @@ class gui_handler:
                 global destination_stop_id
                 destination_stop_id = all_stops[destination_station][1:]
 
-                train_info, trip_info_dict = get_train_info(api_key, start_stop_id, destination_stop_id, departure_day, departure_time, no_of_trips)
+                # Convert to UTC
+                converted_date, converted_time = add_hours_to_sydney_time(departure_day, departure_time)
+
+                train_info, trip_info_dict = get_train_info(api_key, start_stop_id, destination_stop_id, converted_date, converted_time, no_of_trips)
                 
                 for train in train_info:
                         tree.insert("", "end", values=train)
@@ -559,15 +574,14 @@ class gui_handler:
                 saved_trip_detailed_screen.pack(fill="both", expand=True, padx=10, pady=10)
                 
                 detailed_trips_tree = detailed_tree_view(saved_trip_detailed_screen)
-                
-                desired_value = redis_connection.get(treeview_values[0])
-                decoded_desired_value = desired_value.decode("utf-8")
-                list_of_desired_values = json.loads(decoded_desired_value)
 
                 current_date = datetime.datetime.now().strftime("%Y%m%d")
                 current_time = datetime.datetime.now().strftime("%H%M")
 
-                train_info, trip_info_dict = get_train_info(api_key, start_stop_id, destination_stop_id, current_date, current_time, 3)
+                # Convert to UTC
+                converted_date, converted_time = add_hours_to_sydney_time(current_date, current_time)
+
+                train_info, trip_info_dict = get_train_info(api_key, start_stop_id, destination_stop_id, converted_date, converted_time, 3)
 
                 train_info = []
                 for key,val in trip_info_dict["journeys"][0].items():
