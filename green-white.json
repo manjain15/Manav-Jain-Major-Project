@@ -139,7 +139,7 @@
     },
     "CTkFont": {
       "macOS": {
-        "family": "Sans-Serif",
+        "family": "Calibri",
         "size": 13,
         "weight": "bold"
       },

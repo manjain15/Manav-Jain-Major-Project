@@ -18,6 +18,8 @@ import pytz
 from PIL import Image
 import folium
 from folium import plugins
+import webbrowser
+import os
 import time
 import pygame.mixer
 pygame.mixer.init()
@@ -478,7 +480,7 @@ class gui_handler:
                         sum(coord[1] for coord in coords.values()) / len(coords.values())]
                 
                 # Create the map
-                m = folium.Map(location=map_center, zoom_start=4)
+                m = folium.Map(location=map_center, zoom_start=12)
                 
                 # Add markers for each coordinate
                 for name, coord in coords.items():
@@ -526,9 +528,18 @@ class gui_handler:
                 back_button.grid(row=2, column=0, pady=10, padx=5)
                 
                 save_trip_image = ctk.CTkImage(light_image=Image.open('button_images/button_save-trip.png'), dark_image=Image.open('button_images/button_save-trip.png'), size=(134, 17))
-                save_trip_button = ctk.CTkButton(detailed_journey_screen, text="Save Trip", command=save_trip)
+                save_trip_button = ctk.CTkButton(detailed_journey_screen, text="", image=save_trip_image , command=save_trip)
                 save_trip_button.grid(row=3, column=0, pady=10, padx=5)
-                
+
+                # Display the map in a web browser
+                def display_map():
+                        filename = 'file:///'+os.getcwd()+'/' + 'route_map.html'
+                        webbrowser.open_new_tab(filename)
+
+                display_map_image = ctk.CTkImage(light_image=Image.open('button_images/button_display-map.png'), dark_image=Image.open('button_images/button_display-map.png'), size=(153, 19))
+                display_map_button = ctk.CTkButton(detailed_journey_screen, text="", image=display_map_image, command=display_map)
+                display_map_button.grid(row=4, column=0, pady=10, padx=5)
+
                 self.current_screen = detailed_journey_screen
         
         def show_display_saved_trips_screen(self):
@@ -639,7 +650,7 @@ def main():
         root.resizable(True, True)
         main = gui_handler(root)
         def on_closing():
-                redis_connection.flushdb()
+                # redis_connection.flushdb()
                 redis_connection.close()
                 root.destroy()
         
