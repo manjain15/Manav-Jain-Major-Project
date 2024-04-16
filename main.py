@@ -14,7 +14,6 @@ import redislite
 import json
 import datetime
 from datetime import datetime, timedelta
-import pytz
 from PIL import Image
 import folium
 from folium import plugins
@@ -642,8 +641,8 @@ class gui_handler:
     
 def main():        
         # Play the startup sound
-        # pygame.mixer.music.load("startup_sound.mp3")
-        # pygame.mixer.music.play()
+        pygame.mixer.music.load("startup_sound.mp3")
+        pygame.mixer.music.play()
 
         root = tk.Tk()
         root.wm_geometry("300x650")
