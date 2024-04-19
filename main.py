@@ -197,7 +197,7 @@ def detailed_tree_view(screen):
         tree.heading("Destination", text="Destination")
         tree.column("Arrival",anchor="center", width=75)
         tree.heading("Arrival", text="Arrival")
-        tree.grid(row=1, column=2, pady=10, padx=0)
+        tree.grid(row=1, column=0, pady=10, padx=10)
 
         return tree
 
@@ -304,29 +304,29 @@ class gui_handler:
                 selection_screen = ctk.CTkFrame(self.master)
                 selection_screen.pack(fill='both', expand=True, padx=10, pady=10)
                 
-                ctk.CTkLabel(selection_screen, text="Select Starting Stop:").grid(row=0, column=0, padx=10, pady=10)
+                ctk.CTkLabel(selection_screen, text="Select Starting Stop:").grid(row=0, column=2, padx=10, pady=10)
                 start_stations = list(all_stops.keys())
                 start_station_combobox = AutocompleteCombobox(selection_screen)
                 start_station_combobox.set_completion_list(start_stations)
-                start_station_combobox.grid(row=1, column=0, padx=10, pady=10)
+                start_station_combobox.grid(row=1, column=2, padx=10, pady=10)
                 
-                ctk.CTkLabel(selection_screen, text="Select Destination Stop:").grid(row=2, column=0, padx=10, pady=10)
+                ctk.CTkLabel(selection_screen, text="Select Destination Stop:").grid(row=2, column=2, padx=10, pady=10)
                 destination_stations = list(all_stops.keys())
                 destination_combobox = AutocompleteCombobox(selection_screen)
                 destination_combobox.set_completion_list(destination_stations)
-                destination_combobox.grid(row=3, column=0, padx=10, pady=10)
+                destination_combobox.grid(row=3, column=2, padx=10, pady=10)
                 
-                ctk.CTkLabel(selection_screen, text="What day would you like to depart?").grid(row=4, column=0, padx=10, pady=10)
+                ctk.CTkLabel(selection_screen, text="What day would you like to depart?").grid(row=4, column=2, padx=10, pady=10)
                 departure_day_entry = ctk.CTkEntry(selection_screen, placeholder_text="YYYYMMDD")
-                departure_day_entry.grid(row=5, column=0, padx=10, pady=10, columnspan=8)
+                departure_day_entry.grid(row=5, column=2, padx=10, pady=10, columnspan=8)
                 
-                ctk.CTkLabel(selection_screen, text="What time would you like to depart?").grid(row=6, column=0, padx=10, pady=10)
+                ctk.CTkLabel(selection_screen, text="What time would you like to depart?").grid(row=6, column=2, padx=10, pady=10)
                 departure_time_entry = ctk.CTkEntry(selection_screen, placeholder_text="HHDD (24 Hour Time)")
-                departure_time_entry.grid(row=7, column=0, padx=10, pady=10, columnspan=8)
+                departure_time_entry.grid(row=7, column=2, padx=10, pady=10, columnspan=8)
                 
-                ctk.CTkLabel(selection_screen, text="How many trip options would you like?").grid(row=8, column=0, padx=10, pady=10)
+                ctk.CTkLabel(selection_screen, text="How many trip options would you like?").grid(row=8, column=2, padx=10, pady=10)
                 no_of_trips_entry = ctk.CTkEntry(selection_screen, placeholder_text="Enter a number greater than or equal to 1")
-                no_of_trips_entry.grid(row=9, column=0, padx=10, pady=10, columnspan=8)
+                no_of_trips_entry.grid(row=9, column=2, padx=10, pady=10, columnspan=8)
                 
                 def check_validity():
                         origin_valid = False
@@ -384,11 +384,11 @@ class gui_handler:
                 
                 next_button_image = ctk.CTkImage(light_image=Image.open('button_next.png'), dark_image=Image.open('button_next.png'), size=(109, 17))
                 next_button = ctk.CTkButton(selection_screen, text="", image=next_button_image, command=check_validity)
-                next_button.grid(row=10, column=0, columnspan=2, pady=10)
+                next_button.grid(row=10, column=2, columnspan=2, pady=10)
 
                 back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
                 back_button = ctk.CTkButton(selection_screen, text="", image=back_button_image, command=self.show_start_screen)
-                back_button.grid(row=11, column=0, pady=10)
+                back_button.grid(row=11, column=2, pady=10)
                 
                 self.current_screen = selection_screen
         
