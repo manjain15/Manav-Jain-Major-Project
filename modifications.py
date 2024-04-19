@@ -197,7 +197,7 @@ def detailed_tree_view(screen):
         tree.heading("Destination", text="Destination")
         tree.column("Arrival",anchor="center", width=75)
         tree.heading("Arrival", text="Arrival")
-        tree.grid(row=1, column=0, pady=10, padx=10)
+        tree.grid(row=1, column=0, pady=10, padx=0)
 
         return tree
 
@@ -300,33 +300,38 @@ class gui_handler:
         def show_selection_screen(self):
                 if self.current_screen:
                         self.current_screen.destroy()
-                
+        
                 selection_screen = ctk.CTkFrame(self.master)
                 selection_screen.pack(fill='both', expand=True, padx=10, pady=10)
                 
-                ctk.CTkLabel(selection_screen, text="Select Starting Stop:").grid(row=0, column=2, padx=10, pady=10)
+                # Ensuring widgets will be centred within the screen
+                selection_screen.grid_propagate(False)
+                selection_screen.grid_columnconfigure(0, weight=1)
+                selection_screen.grid_columnconfigure(4, weight=1)
+
+                ctk.CTkLabel(selection_screen, text="Select Starting Stop:").grid(row=1, column=2, padx=10, pady=10, sticky="nsew")
                 start_stations = list(all_stops.keys())
                 start_station_combobox = AutocompleteCombobox(selection_screen)
                 start_station_combobox.set_completion_list(start_stations)
-                start_station_combobox.grid(row=1, column=2, padx=10, pady=10)
+                start_station_combobox.grid(row=2, column=2, padx=10, pady=10, sticky="nsew")
                 
-                ctk.CTkLabel(selection_screen, text="Select Destination Stop:").grid(row=2, column=2, padx=10, pady=10)
+                ctk.CTkLabel(selection_screen, text="Select Destination Stop:").grid(row=3, column=2, padx=10, pady=10, sticky="nsew")
                 destination_stations = list(all_stops.keys())
                 destination_combobox = AutocompleteCombobox(selection_screen)
                 destination_combobox.set_completion_list(destination_stations)
-                destination_combobox.grid(row=3, column=2, padx=10, pady=10)
+                destination_combobox.grid(row=4, column=2, padx=10, pady=10, sticky="nsew")
                 
-                ctk.CTkLabel(selection_screen, text="What day would you like to depart?").grid(row=4, column=2, padx=10, pady=10)
+                ctk.CTkLabel(selection_screen, text="What day would you like to depart?").grid(row=5, column=2, padx=10, pady=10, sticky="nsew")
                 departure_day_entry = ctk.CTkEntry(selection_screen, placeholder_text="YYYYMMDD")
-                departure_day_entry.grid(row=5, column=2, padx=10, pady=10, columnspan=8)
+                departure_day_entry.grid(row=6, column=2, padx=10, pady=10, sticky="nsew")
                 
-                ctk.CTkLabel(selection_screen, text="What time would you like to depart?").grid(row=6, column=2, padx=10, pady=10)
+                ctk.CTkLabel(selection_screen, text="What time would you like to depart?").grid(row=7, column=2, padx=10, pady=10, sticky="nsew")
                 departure_time_entry = ctk.CTkEntry(selection_screen, placeholder_text="HHDD (24 Hour Time)")
-                departure_time_entry.grid(row=7, column=2, padx=10, pady=10, columnspan=8)
+                departure_time_entry.grid(row=8, column=2, padx=10, pady=10, sticky="nsew")
                 
-                ctk.CTkLabel(selection_screen, text="How many trip options would you like?").grid(row=8, column=2, padx=10, pady=10)
-                no_of_trips_entry = ctk.CTkEntry(selection_screen, placeholder_text="Enter a number greater than or equal to 1")
-                no_of_trips_entry.grid(row=9, column=2, padx=10, pady=10, columnspan=8)
+                ctk.CTkLabel(selection_screen, text="How many trip options would you like?").grid(row=9, column=2, padx=10, pady=10, sticky="nsew")
+                no_of_trips_entry = ctk.CTkEntry(selection_screen, placeholder_text="Enter a number ≥ 1")
+                no_of_trips_entry.grid(row=10, column=2, padx=10, pady=10, sticky="nsew")
                 
                 def check_validity():
                         origin_valid = False
@@ -384,11 +389,11 @@ class gui_handler:
                 
                 next_button_image = ctk.CTkImage(light_image=Image.open('button_next.png'), dark_image=Image.open('button_next.png'), size=(109, 17))
                 next_button = ctk.CTkButton(selection_screen, text="", image=next_button_image, command=check_validity)
-                next_button.grid(row=10, column=2, columnspan=2, pady=10)
+                next_button.grid(row=11, column=2, columnspan=2, pady=10)
 
                 back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
                 back_button = ctk.CTkButton(selection_screen, text="", image=back_button_image, command=self.show_start_screen)
-                back_button.grid(row=11, column=2, pady=10)
+                back_button.grid(row=12, column=2, pady=10)
                 
                 self.current_screen = selection_screen
         
@@ -399,22 +404,22 @@ class gui_handler:
                 
                 train_screen = ctk.CTkFrame(self.master)
                 train_screen.pack(fill="both", expand=True, padx=10, pady=10)
+                
+                # Ensuring widgets will be centred within the screen
+                train_screen.grid_propagate(False)
+                train_screen.grid_columnconfigure(0, weight=1)
+                train_screen.grid_columnconfigure(2, weight=1)
 
-                ctk.CTkLabel(train_screen, text=f"Trips from {start_station}").grid(row=0, column=0, pady=10)
+                ctk.CTkLabel(train_screen, text=f"Trips from {start_station}").grid(row=1, column=1, pady=10)
 
-                # Define custom style (not working)
-                style = ttk.Style()
-                style.configure("Custom.Treeview", background="F5F5F5")  # Set background color for the entire Treeview
-                style.configure("Custom.Treeview.Heading", background="F5F5F5")  # Set background color for the headers
-
-                tree = ttk.Treeview(train_screen, columns=("Journey", "Departure", "Arrival"), show="headings", style="Custom.Treeview")
+                tree = ttk.Treeview(train_screen, columns=("Journey", "Departure", "Arrival"), show="headings")
                 tree.column("Journey",anchor="center", width=95)
                 tree.heading("Journey", text="Journey")
                 tree.column("Departure",anchor="center", width=95)
                 tree.heading("Departure", text="Departure")
                 tree.column("Arrival",anchor="center", width=95)
                 tree.heading("Arrival", text="Arrival")
-                tree.grid(row=1, column=0, columnspan=2, pady=10)
+                tree.grid(row=2, column=1, pady=10)
                 
                 # Handler for item click event
                 def on_item_click(event):
@@ -442,7 +447,7 @@ class gui_handler:
                 
                 back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
                 back_button = ctk.CTkButton(train_screen, text="", image=back_button_image, command=self.show_selection_screen)
-                back_button.grid(row=2, column=0, pady=10)
+                back_button.grid(row=3, column=1, pady=10)
                 
                 self.current_screen = train_screen
         
@@ -650,7 +655,7 @@ def main():
         pygame.mixer.music.play()
 
         root = tk.Tk()
-        root.wm_geometry("500x650")
+        root.wm_geometry("505x650")
         root.resizable(False, False)
         main = gui_handler(root)
         def on_closing():
