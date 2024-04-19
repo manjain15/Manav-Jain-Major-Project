@@ -189,15 +189,15 @@ def detailed_tree_view(screen):
         tree = ttk.Treeview(screen, columns=("Route", "Origin", "Departure", "Destination", "Arrival"), show="headings")
         tree.column("Route",anchor="center", width=50)
         tree.heading("Route", text="Route")
-        tree.column("Origin",anchor="center", width=70)
+        tree.column("Origin",anchor="center", width=150)
         tree.heading("Origin", text="Origin")
-        tree.column("Departure",anchor="center", width=50)
+        tree.column("Departure",anchor="center", width=75)
         tree.heading("Departure", text="Departure")
-        tree.column("Destination",anchor="center", width=70)
+        tree.column("Destination",anchor="center", width=150)
         tree.heading("Destination", text="Destination")
-        tree.column("Arrival",anchor="center", width=50)
+        tree.column("Arrival",anchor="center", width=75)
         tree.heading("Arrival", text="Arrival")
-        tree.grid(row=1, column=0, pady=10, padx=0)
+        tree.grid(row=1, column=2, pady=10, padx=0)
 
         return tree
 
@@ -650,8 +650,8 @@ def main():
         pygame.mixer.music.play()
 
         root = tk.Tk()
-        root.wm_geometry("300x650")
-        root.resizable(True, True)
+        root.wm_geometry("500x650")
+        root.resizable(False, False)
         main = gui_handler(root)
         def on_closing():
                 # redis_connection.flushdb()
