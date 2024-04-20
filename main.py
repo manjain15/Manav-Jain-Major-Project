@@ -558,6 +558,11 @@ class gui_handler:
                 display_saved_trips_screen = ctk.CTkFrame(self.master)
                 display_saved_trips_screen.pack(fill="both", expand=True, padx=10, pady=10)
                 
+                # Ensuring widgets will be centred within the screen
+                display_saved_trips_screen.grid_propagate(False)
+                display_saved_trips_screen.grid_columnconfigure(0, weight=1)
+                display_saved_trips_screen.grid_columnconfigure(2, weight=1)
+
                 all_keys = redis_connection.keys()
                 
                 if all_keys == []:
@@ -572,7 +577,7 @@ class gui_handler:
                         trips_tree = ttk.Treeview(display_saved_trips_screen, columns=("Trip"), show="headings")
                         trips_tree.column("Trip",anchor="center", width=300)
                         trips_tree.heading("Trip", text="Trip")
-                        trips_tree.grid(row=1, column=0, columnspan=5, pady=10)
+                        trips_tree.grid(row=1, column=1, pady=10)
                         
                         for key in all_keys:
                                 key_str = key.decode('utf-8')
@@ -590,7 +595,7 @@ class gui_handler:
                         
                         back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
                         back_button = ctk.CTkButton(master=display_saved_trips_screen, text="", image=back_button_image, command=self.show_start_screen)
-                        back_button.grid(row=2, column=0, columnspan=2, pady=10)
+                        back_button.grid(row=2, column=1, pady=10)
                         
                         self.current_screen = display_saved_trips_screen
         
