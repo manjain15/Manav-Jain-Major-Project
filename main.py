@@ -566,13 +566,9 @@ class gui_handler:
                 all_keys = redis_connection.keys()
                 
                 if all_keys == []:
-                        ctk.CTkLabel(master=display_saved_trips_screen, text="Save a trip first").grid(pady=10)
-                        
-                        def show_start_screen():
-                                self.show_start_screen()
-                                display_saved_trips_screen.destroy()
-                        
-                        display_saved_trips_screen.after(3000, show_start_screen)
+                        messagebox.showerror('INVALID INPUT', 'Error: Please save a trip first')
+                        self.show_start_screen()
+                        display_saved_trips_screen.destroy()
                 else:
                         trips_tree = ttk.Treeview(display_saved_trips_screen, columns=("Trip"), show="headings")
                         trips_tree.column("Trip",anchor="center", width=300)
