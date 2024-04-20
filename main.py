@@ -664,7 +664,7 @@ def main():
         root.resizable(False, False)
         main = gui_handler(root)
         def on_closing():
-                # redis_connection.flushdb()
+                redis_connection.flushdb()
                 redis_connection.close()
                 root.destroy()
         
