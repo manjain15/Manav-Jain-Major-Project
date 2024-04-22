@@ -75,7 +75,7 @@ class AutocompleteCombobox(ttk.Combobox):
                         self.autocomplete()
 
 # CODE FOR PARSING SYDNEYTRAINS AND BUSES API
-def get_gtfs_data(api_key, api_url, specific_file=None):
+def get_gtfs_data(api_key, api_url, specific_file):
     headers = {'Authorization': f'apikey {api_key}'}
     
     try:
@@ -98,7 +98,7 @@ def get_gtfs_data(api_key, api_url, specific_file=None):
     
     return None
 
-def parse_gtfs_data(data, specific_file=None):
+def parse_gtfs_data(data, specific_file):
     if data is None:
         return None
     
