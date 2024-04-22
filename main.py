@@ -76,27 +76,20 @@ class AutocompleteCombobox(ttk.Combobox):
 
 # CODE FOR PARSING SYDNEYTRAINS AND BUSES API
 def get_gtfs_data(api_key, api_url, specific_file):
-    headers = {'Authorization': f'apikey {api_key}'}
-    
-    try:
+        headers = {'Authorization': f'apikey {api_key}'}
+
         response = requests.get(api_url, headers=headers)
         response.raise_for_status()  # Raise an exception for non-200 status codes
-        
+
         with zipfile.ZipFile(io.BytesIO(response.content)) as zip_file:
-            gtfs_data = {}
-            for file_name in zip_file.namelist():
-                if specific_file and file_name != specific_file:
-                    continue
-                gtfs_data[file_name] = zip_file.read(file_name).decode("utf-8")
-            return gtfs_data
+                gtfs_data = {}
+                for file_name in zip_file.namelist():
+                        if specific_file and file_name != specific_file:
+                                continue
+                        gtfs_data[file_name] = zip_file.read(file_name).decode("utf-8")
+                        return gtfs_data
     
-    except requests.RequestException as e:
-        print(f"API request failed: {e}")
-    
-    except Exception as e:
-        print(f"Error: {e}")
-    
-    return None
+        return None
 
 def parse_gtfs_data(data, specific_file):
     if data is None:
