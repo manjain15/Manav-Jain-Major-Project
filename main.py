@@ -25,6 +25,7 @@ pygame.mixer.init()
 from TransportNSW import TransportNSW
 tnsw = TransportNSW()
 
+# Establish a connection to the redis database
 redis_connection = redislite.Redis("/Users/manavjain/github-classroom/Baulkhamhills-hs/Manav-Jain-Major-Project/Trips", ":memory")
 
 # START OF AUTOCOMPLETE COMBOBOX CODE
@@ -74,7 +75,7 @@ class AutocompleteCombobox(ttk.Combobox):
                 elif len(event.keysym) == 1:
                         self.autocomplete()
 
-# CODE FOR PARSING SYDNEYTRAINS AND BUSES API
+# Retrievig GTFS data from the TNSW API
 def get_gtfs_data(api_key, api_url, specific_file):
         headers = {'Authorization': f'apikey {api_key}'}
 
@@ -91,6 +92,7 @@ def get_gtfs_data(api_key, api_url, specific_file):
     
         return None
 
+# Parsing GTFS data
 def parse_gtfs_data(data, specific_file):
     if data is None:
         return None
@@ -123,7 +125,7 @@ def parse_gtfs_data(data, specific_file):
     
     return parsed_data
 
-# CODE TO RETRIEVE PARSED DATA FROM TNSW API
+# Retrieiving parsed data from the TNSW API
 def get_train_info(api_key, start_station, destination_station, departure_day, departure_time, no_of_trips):
         
         train_info = []
@@ -178,6 +180,7 @@ def get_train_info(api_key, start_station, destination_station, departure_day, d
         
         return train_info, trip_info_dict
 
+# Detailed tree view for both detailed_journey_info_screen and saved_trip_detailed_screen
 def detailed_tree_view(screen):
         tree = ttk.Treeview(screen, columns=("Route", "Origin", "Departure", "Destination", "Arrival"), show="headings")
         tree.column("Route",anchor="center", width=50)
@@ -194,6 +197,7 @@ def detailed_tree_view(screen):
 
         return tree
 
+# Function to add 11 hours to Sydney time to convert to UTC time (for the API)
 def add_hours_to_sydney_time(date_str, time_str):
     # Convert input strings to datetime object
     sydney_time = datetime.strptime(date_str + time_str, '%Y%m%d%H%M')
@@ -206,11 +210,12 @@ def add_hours_to_sydney_time(date_str, time_str):
 
 start_time_getting_bus_train_data = time.time()
 
+# Load the API key from a JSON file
 with open('api_key.json') as f:
         api_key_file = json.load(f)
-
 api_key = api_key_file['API_KEY']
 
+# Get bus and train data
 start_getting_bus_data = time.time()
 bus_data = get_gtfs_data(api_key, 'https://api.transport.nsw.gov.au/v1/gtfs/schedule/buses', specific_file="stops.txt")
 end_getting_bus_data = time.time()
@@ -223,6 +228,7 @@ parsed_train_data = parse_gtfs_data(train_data, specific_file="stops.txt")
 end_time_getting_bus_train_data = time.time()
 print(f"Time taken to get bus and train data: {end_time_getting_bus_train_data - start_time_getting_bus_train_data} seconds")
 
+# Create a dictionary of all stops
 counter = 0
 bus_stops = {}
 while counter <= len(parsed_bus_data["stops.txt"]) - 1:
@@ -252,6 +258,8 @@ class gui_handler:
         def __init__(self, master):
                 self.master = master
                 self.master.title("ViewTrip")
+
+                # Set the default color theme from JSON file
                 ctk.set_default_color_theme("green-white.json")
                 
                 self.current_screen = None
@@ -326,20 +334,25 @@ class gui_handler:
                 no_of_trips_entry = ctk.CTkEntry(selection_screen, placeholder_text="Enter a number ≥ 1")
                 no_of_trips_entry.grid(row=10, column=2, padx=10, pady=10, sticky="nsew")
                 
+                # Error checking for inputs in selection_screen (ensuring data validation)
                 def check_validity():
+                        # Initially setting all fields to invalid
                         origin_valid = False
                         destination_valid = False
                         departure_date_valid = False
                         departure_time_valid = False
                         no_of_trips_valid = False
                         
+                        # Getting the text from the comboboxes and entries
                         origin_text = start_station_combobox.get()
                         destination_text = destination_combobox.get()
                         departure_day_text = departure_day_entry.get()
                         departure_time_text = departure_time_entry.get()
                         no_of_trips_text = no_of_trips_entry.get()
                         
+                        # Checking if user has inputted anything
                         if origin_text and destination_text and departure_day_text and departure_time_text and no_of_trips_text:
+                                # Checking if the start and destination stations are valid and if not returning respective error messages
                                 if origin_text not in start_stations:
                                         origin_valid = False
                                         messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid origin!')
@@ -349,14 +362,17 @@ class gui_handler:
                                         messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid destination!')
                                         self.show_selection_screen()
                                 
+                                # Checking if the number of trips is valid
                                 elif int(no_of_trips_text) < 1:
                                         no_of_trips_valid = False
                                         messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid number of trips!')
                                         self.show_selection_screen()
                                 else:
+                                        # If all inputs are valid, set the respective variables to True
                                         origin_valid = True
                                         destination_valid = True
                                         no_of_trips_valid = True
+                                        # Checking if the date and time are valid
                                         try:
                                                 datetime.strptime(departure_day_text, '%Y%m%d')
                                                 departure_date_valid = True
@@ -376,6 +392,7 @@ class gui_handler:
                                 messagebox.showerror('INVALID INPUT', 'Error: Please enter valid input for all fields!')
                                 self.show_selection_screen()
                         
+                        # If all inputs are valid, show the train screen
                         if origin_valid and destination_valid and departure_date_valid and departure_time_valid and no_of_trips_valid:
                                 self.show_train_screen(start_station_combobox.get(), destination_combobox.get(), departure_day_entry.get(), departure_time_entry.get(), int(no_of_trips_entry.get()))
                                 selection_screen.destroy()
