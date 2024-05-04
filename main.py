@@ -589,19 +589,42 @@ class gui_handler:
                                 key_str = key.decode('utf-8')
                                 trips_tree.insert("", "end", text=key_str, values=(key_str,))
                         
-                        # Handler for item click event
-                        def on_item_click(event):
+
+                        # Handler for single click event
+                        def on_single_click(event):
+                                item_id = trips_tree.focus()
+                                if item_id:
+                                        item_values = list(trips_tree.item(item_id, "values"))
+
+                        # Handler for double click event
+                        def on_double_click(event):
                                 item_id = trips_tree.focus()  # Get the ID of the clicked item
                                 if item_id:  # Ensure that an item was clicked
                                         item_values = trips_tree.item(item_id, "values")
                                         if item_values:
                                                 self.show_saved_trip_detailed_screen(item_values)
+
+                        # Handler for deleting trip
+                        def on_delete():
+                                item_id = trips_tree.focus()
+                                if item_id:
+                                        redis_connection.delete(trips_tree.item(trips_tree.focus(), "text"))
+                                        self.show_start_screen()
+                                        display_saved_trips_screen.destroy()
+                                else:
+                                        messagebox.showerror('INVALID INPUT', 'Error: Please select a trip to delete')
+                                        self.show_display_saved_trips_screen()
                         
-                        trips_tree.bind("<ButtonRelease-1>", on_item_click)
+                        trips_tree.bind("<Double-1>", on_double_click)
+                        trips_tree.bind("<ButtonRelease-1>", on_single_click)
                         
                         back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
                         back_button = ctk.CTkButton(master=display_saved_trips_screen, text="", image=back_button_image, command=self.show_start_screen)
                         back_button.grid(row=2, column=1, pady=10)
+
+                        delete_button_image = ctk.CTkImage(light_image=Image.open('button_delete-trip.png'), dark_image=Image.open('button_delete-trip.png'), size=(107, 17))
+                        delete_button = ctk.CTkButton(master=display_saved_trips_screen, text="", image=delete_button_image, command=on_delete)
+                        delete_button.grid(row=3, column=1, pady=10)
                         
                         self.current_screen = display_saved_trips_screen
         
