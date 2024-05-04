@@ -323,13 +323,12 @@ class gui_handler:
                 destination_combobox.set_completion_list(destination_stations)
                 destination_combobox.grid(row=4, column=2, padx=10, pady=10, sticky="nsew")
 
-                cal = Calendar(selection_screen, selectmode = 'day', date_pattern = "yyyyMMdd")
+                cal = Calendar(selection_screen, selectmode = 'day', date_pattern = "yyyyMMdd", showweeknumbers=False ,
+                               font="Calibri 13", cursor="hand1", background="black", foreground="white", headersbackground="white", 
+                               headersforeground="white", selectbackground="orange", selectforeground="green", normalbackground="white",
+                               normalforeground="white", weekendbackground="white", weekendforeground="white", othermonthbackground="white",)
 
                 cal.grid(row=6, column=2, padx=10, pady=10, sticky="nsew")
-
-                # ctk.CTkLabel(selection_screen, text="What day would you like to depart?").grid(row=5, column=2, padx=10, pady=10, sticky="nsew")
-                # departure_day_entry = ctk.CTkEntry(selection_screen, placeholder_text="YYYYMMDD")
-                # departure_day_entry.grid(row=6, column=2, padx=10, pady=10, sticky="nsew")
                 
                 ctk.CTkLabel(selection_screen, text="What time would you like to depart?").grid(row=7, column=2, padx=10, pady=10, sticky="nsew")
                 departure_time_entry = ctk.CTkEntry(selection_screen, placeholder_text="HHDD (24 Hour Time)")
@@ -695,7 +694,7 @@ def main():
         pygame.mixer.music.play()
 
         root = tk.Tk()
-        root.wm_geometry("505x700")
+        root.wm_geometry("505x710")
         root.resizable(False, False)
         main = gui_handler(root)
         def on_closing():
