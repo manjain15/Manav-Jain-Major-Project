@@ -6,6 +6,7 @@ from typing import List
 from tkinter import messagebox
 import customtkinter as ctk
 from CTkListbox import *
+from tkcalendar import Calendar
 import requests
 import zipfile
 import io
@@ -321,10 +322,14 @@ class gui_handler:
                 destination_combobox = AutocompleteCombobox(selection_screen)
                 destination_combobox.set_completion_list(destination_stations)
                 destination_combobox.grid(row=4, column=2, padx=10, pady=10, sticky="nsew")
-                
-                ctk.CTkLabel(selection_screen, text="What day would you like to depart?").grid(row=5, column=2, padx=10, pady=10, sticky="nsew")
-                departure_day_entry = ctk.CTkEntry(selection_screen, placeholder_text="YYYYMMDD")
-                departure_day_entry.grid(row=6, column=2, padx=10, pady=10, sticky="nsew")
+
+                cal = Calendar(selection_screen, selectmode = 'day', date_pattern = "yyyyMMdd")
+
+                cal.grid(row=6, column=2, padx=10, pady=10, sticky="nsew")
+
+                # ctk.CTkLabel(selection_screen, text="What day would you like to depart?").grid(row=5, column=2, padx=10, pady=10, sticky="nsew")
+                # departure_day_entry = ctk.CTkEntry(selection_screen, placeholder_text="YYYYMMDD")
+                # departure_day_entry.grid(row=6, column=2, padx=10, pady=10, sticky="nsew")
                 
                 ctk.CTkLabel(selection_screen, text="What time would you like to depart?").grid(row=7, column=2, padx=10, pady=10, sticky="nsew")
                 departure_time_entry = ctk.CTkEntry(selection_screen, placeholder_text="HHDD (24 Hour Time)")
@@ -346,7 +351,8 @@ class gui_handler:
                         # Getting the text from the comboboxes and entries
                         origin_text = start_station_combobox.get()
                         destination_text = destination_combobox.get()
-                        departure_day_text = departure_day_entry.get()
+                        departure_day_text = cal.get_date()
+                        print(departure_day_text)
                         departure_time_text = departure_time_entry.get()
                         no_of_trips_text = no_of_trips_entry.get()
                         
@@ -394,7 +400,7 @@ class gui_handler:
                         
                         # If all inputs are valid, show the train screen
                         if origin_valid and destination_valid and departure_date_valid and departure_time_valid and no_of_trips_valid:
-                                self.show_train_screen(start_station_combobox.get(), destination_combobox.get(), departure_day_entry.get(), departure_time_entry.get(), int(no_of_trips_entry.get()))
+                                self.show_train_screen(start_station_combobox.get(), destination_combobox.get(), cal.get_date(), departure_time_entry.get(), int(no_of_trips_entry.get()))
                                 selection_screen.destroy()
                 
                 next_button_image = ctk.CTkImage(light_image=Image.open('button_next.png'), dark_image=Image.open('button_next.png'), size=(109, 17))
@@ -689,7 +695,7 @@ def main():
         pygame.mixer.music.play()
 
         root = tk.Tk()
-        root.wm_geometry("505x650")
+        root.wm_geometry("505x700")
         root.resizable(False, False)
         main = gui_handler(root)
         def on_closing():
