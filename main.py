@@ -9,6 +9,8 @@ from CTkListbox import *
 from tkcalendar import Calendar
 from tktimepicker import SpinTimePickerModern
 from tktimepicker import constants
+import itertools
+import threading
 import requests
 import zipfile
 import io
@@ -77,10 +79,6 @@ class AutocompleteCombobox(ttk.Combobox):
                         self.position = self.index(END)
                 elif len(event.keysym) == 1:
                         self.autocomplete()
-
-# Loading Screen to mask API retrieval time
-
-
 
 # Retrievig GTFS data from the TNSW API
 def get_gtfs_data(api_key, api_url, specific_file):
@@ -703,6 +701,7 @@ def main():
         # Play the startup sound
         pygame.mixer.music.load("startup_sound.mp3")
         pygame.mixer.music.play()
+
 
         root = tk.Tk()
         root.wm_geometry("505x750")
