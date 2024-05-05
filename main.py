@@ -78,6 +78,10 @@ class AutocompleteCombobox(ttk.Combobox):
                 elif len(event.keysym) == 1:
                         self.autocomplete()
 
+# Loading Screen to mask API retrieval time
+
+
+
 # Retrievig GTFS data from the TNSW API
 def get_gtfs_data(api_key, api_url, specific_file):
         headers = {'Authorization': f'apikey {api_key}'}
@@ -206,7 +210,7 @@ def add_hours_to_sydney_time(date_str, time_str):
     sydney_time = datetime.strptime(date_str + time_str, '%Y%m%d%H%M')
     
     # Add 11 hours to Sydney time
-    sydney_time += timedelta(hours=11)
+    sydney_time += timedelta(hours=10)
     
     # Return the result in the same format
     return sydney_time.strftime('%Y%m%d'), sydney_time.strftime('%H%M')
