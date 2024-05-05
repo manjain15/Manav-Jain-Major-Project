@@ -7,6 +7,8 @@ from tkinter import messagebox
 import customtkinter as ctk
 from CTkListbox import *
 from tkcalendar import Calendar
+from tktimepicker import SpinTimePickerModern
+from tktimepicker import constants
 import requests
 import zipfile
 import io
@@ -323,6 +325,7 @@ class gui_handler:
                 destination_combobox.set_completion_list(destination_stations)
                 destination_combobox.grid(row=4, column=2, padx=10, pady=10, sticky="nsew")
 
+                ctk.CTkLabel(selection_screen, text="Select Departure Date:").grid(row=5, column=2, padx=10, pady=10, sticky="nsew")
                 cal = Calendar(selection_screen, selectmode = 'day', date_pattern = "yyyyMMdd", showweeknumbers=False ,
                                font="Calibri 13", cursor="hand1", background="black", foreground="white", headersbackground="white", 
                                headersforeground="white", selectbackground="orange", selectforeground="green", normalbackground="white",
@@ -331,8 +334,13 @@ class gui_handler:
                 cal.grid(row=6, column=2, padx=10, pady=10, sticky="nsew")
                 
                 ctk.CTkLabel(selection_screen, text="What time would you like to depart?").grid(row=7, column=2, padx=10, pady=10, sticky="nsew")
-                departure_time_entry = ctk.CTkEntry(selection_screen, placeholder_text="HHDD (24 Hour Time)")
-                departure_time_entry.grid(row=8, column=2, padx=10, pady=10, sticky="nsew")
+                
+                time_picker = SpinTimePickerModern(selection_screen)
+                time_picker.addAll(constants.HOURS24)  # adds hours clock, minutes and period
+                time_picker.configureAll(bg="#ffffff", height=1, fg="#000000", font=("Calibri", 13), hoverbg="#ffffff",
+                                        hovercolor="#014421", clickedbg="#000000", clickedcolor="#ff5f00")
+                time_picker.configure_separator(fg="#000000", bg="#ffffff")
+                time_picker.grid(row=8, column=2, padx=10, pady=10, sticky="nsew")
                 
                 ctk.CTkLabel(selection_screen, text="How many trip options would you like?").grid(row=9, column=2, padx=10, pady=10, sticky="nsew")
                 no_of_trips_entry = ctk.CTkEntry(selection_screen, placeholder_text="Enter a number ≥ 1")
@@ -351,8 +359,7 @@ class gui_handler:
                         origin_text = start_station_combobox.get()
                         destination_text = destination_combobox.get()
                         departure_day_text = cal.get_date()
-                        print(departure_day_text)
-                        departure_time_text = departure_time_entry.get()
+                        departure_time_text = str(time_picker.time()[0]) + str(time_picker.time()[1])
                         no_of_trips_text = no_of_trips_entry.get()
                         
                         # Checking if user has inputted anything
@@ -399,7 +406,7 @@ class gui_handler:
                         
                         # If all inputs are valid, show the train screen
                         if origin_valid and destination_valid and departure_date_valid and departure_time_valid and no_of_trips_valid:
-                                self.show_train_screen(start_station_combobox.get(), destination_combobox.get(), cal.get_date(), departure_time_entry.get(), int(no_of_trips_entry.get()))
+                                self.show_train_screen(start_station_combobox.get(), destination_combobox.get(), cal.get_date(), departure_time_text, int(no_of_trips_entry.get()))
                                 selection_screen.destroy()
                 
                 next_button_image = ctk.CTkImage(light_image=Image.open('button_next.png'), dark_image=Image.open('button_next.png'), size=(109, 17))
@@ -627,7 +634,7 @@ class gui_handler:
                         back_button = ctk.CTkButton(master=display_saved_trips_screen, text="", image=back_button_image, command=self.show_start_screen)
                         back_button.grid(row=2, column=1, pady=10)
 
-                        delete_button_image = ctk.CTkImage(light_image=Image.open('button_delete-trip.png'), dark_image=Image.open('button_delete-trip.png'), size=(107, 17))
+                        delete_button_image = ctk.CTkImage(light_image=Image.open('button_delete-trip.png'), dark_image=Image.open('button_delete-trip.png'), size=(157, 17))
                         delete_button = ctk.CTkButton(master=display_saved_trips_screen, text="", image=delete_button_image, command=on_delete)
                         delete_button.grid(row=3, column=1, pady=10)
                         
@@ -694,7 +701,7 @@ def main():
         pygame.mixer.music.play()
 
         root = tk.Tk()
-        root.wm_geometry("505x710")
+        root.wm_geometry("505x750")
         root.resizable(False, False)
         main = gui_handler(root)
         def on_closing():
