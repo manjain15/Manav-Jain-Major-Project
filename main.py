@@ -19,7 +19,7 @@ import redislite
 import json
 import datetime
 from datetime import datetime, timedelta
-from PIL import Image
+from PIL import Image, ImageTk
 import folium
 from folium import plugins
 import webbrowser
@@ -208,7 +208,7 @@ def add_hours_to_sydney_time(date_str, time_str):
     sydney_time = datetime.strptime(date_str + time_str, '%Y%m%d%H%M')
     
     # Add 11 hours to Sydney time
-    sydney_time += timedelta(hours=10)
+    sydney_time += timedelta(hours=10) # Sydney is UTC+10 (UTC+11 for Daylight Saving Time)
     
     # Return the result in the same format
     return sydney_time.strftime('%Y%m%d'), sydney_time.strftime('%H%M')
@@ -278,46 +278,64 @@ def parse_gtfs_data(data, specific_file):
 # Create the main window on the main thread
 root = tk.Tk()  # This must be on the main thread
 root.title("Obtaining real-time data...")
-root.geometry("400x180")
+root.geometry("600x200")  # Wider window for animation
 root.eval("tk::PlaceWindow . center")
+root.configure(bg="white")
 
 # Create a label to show the loading message
-loading_label = tk.Label(root, text="Obtaining real-time data...", font=("Calibri", 20))
-loading_label.pack(pady=20)
+loading_label = tk.Label(root, text="Obtaining real-time data...", font=("Times New Roman", 20, ), bg="white", fg="black")
+loading_label.pack(pady=10)
 
-# Create the spinning wheel and progress bar
-wheel_label = tk.Label(root, font=("Calibri", 30))
-wheel_label.pack()
+# Create a canvas with a white background
+canvas = tk.Canvas(root, width=600, height=100, bg='white', highlightthickness=0)
+canvas.pack(pady=10)
 
-progress_var = tk.IntVar()  # Variable for the progress bar
-progress_bar = ttk.Progressbar(root, length=300, variable=progress_var, maximum=100)
-progress_bar.pack(pady=20)
+# Load the bus image 
+bus_image_path = "start_screen_logo.png"  # Ensure this points to your bus image
+# Create a PhotoImage from the image
+bus_image = tk.PhotoImage(file=bus_image_path)
 
-# Define a smoother wheel sequence using Unicode characters
-wheel_sequence = itertools.cycle(["◐", "◓", "◑", "◒"])
+# Create the bus sprite on the canvas
+bus_sprite = canvas.create_image(50, 50, image=bus_image, anchor=tk.CENTER)
 
 # Variable to hold the scheduled after call ID
-wheel_update_after_id = None
+bus_update_after_id = None
 
-# Define the function to update the spinning wheel
-def update_wheel():
-        global wheel_update_after_id  # To keep track of the scheduled after call
-        wheel_label.configure(text=next(wheel_sequence))  # Update the spinning wheel
-        # Schedule another update and store the ID
-        wheel_update_after_id = root.after(100, update_wheel)
+# Function to move the bus
+def move_bus():
+    global bus_update_after_id
+    canvas.move(bus_sprite, 5, 0)  # Move the bus to the right
+    # Check if the bus has moved off the screen
+    x, _ = canvas.coords(bus_sprite)
+    if x > 600:
+        canvas.coords(bus_sprite, 50, 50)  # Reset the position
+    bus_update_after_id = root.after(50, move_bus)  # Schedule the next movement
+
+# Start the bus animation
+move_bus()
+
+# Create a progress bar
+progress_var = tk.IntVar()  # Variable for the progress bar
+progress_bar = ttk.Progressbar(root, length=300, variable=progress_var, maximum=100)
+progress_bar.pack(pady=10)
 
 # Function to update the progress bar
 def update_progress():
-        if progress_var.get() < 100:
-                progress_var.set(progress_var.get() + 10)  # Increment progress
-                root.after(1000, update_progress)  # Call again after 1 second
-        else:
-                if wheel_update_after_id is not None:
+    if progress_var.get() < 100:
+        progress_var.set(progress_var.get() + 10)
+        root.after(1000, update_progress)
+    else:
+        if bus_update_after_id is not None:
                         # Cancel the scheduled update_wheel call before destroying
-                        root.after_cancel(wheel_update_after_id)
-                root.destroy()  # Close the loading screen when complete
-# Shared variable to store the fetched data
-data_container = {'data': None}
+                        root.after_cancel(bus_update_after_id)
+        root.destroy()  # Close the loading screen when complete
+        
+
+# Start updating the progress bar
+update_progress()
+
+# Start the data fetch threads
+data_container = {}
 
 # Function to fetch data in the background
 def get_parse_bus_data():
@@ -344,26 +362,22 @@ def get_parse_train_data():
     data_container['train'] = parse_gtfs_data(train_data, specific_file="stops.txt")
     print("Train data parsed in:", time.time() - start_time)
 
-# Start the data fetch thread before starting the main loop
-bus_thread = threading.Thread(target=get_parse_bus_data)
-train_thread = threading.Thread(target=get_parse_train_data)
+# Background threads to fetch bus and train data
+bus_thread = threading.Thread(target=lambda: get_parse_bus_data())
+train_thread = threading.Thread(target=lambda: get_parse_train_data())
 bus_thread.start()
 train_thread.start()
 
-# Start updating the progress bar and wheel
-update_wheel()
-update_progress()
-
 # Start the Tkinter main event loop
-root.mainloop()
+root.mainloop()  # This will block until the window is closed
 
-# Wait for the fetch thread to finish
-bus_thread.join()  # This ensures the thread completes before proceeding
+# Ensure the fetch threads are complete
+bus_thread.join()
 train_thread.join()
 
-# Access the parsed data
-parsed_bus_data = data_container['bus']
-parsed_train_data = data_container['train']
+# After the loading screen, you can continue with the next steps
+parsed_bus_data = data_container.get('bus', None)
+parsed_train_data = data_container.get('train', None)
 
 # Create a dictionary of all stops
 counter = 0
