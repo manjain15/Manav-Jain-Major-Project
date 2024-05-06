@@ -139,19 +139,19 @@
     },
     "CTkFont": {
       "macOS": {
-        "family": "Calibri",
+        "family": "Times New Roman",
         "size": 13,
         "weight": "bold"
       },
       "Windows": {
-        "family": "Roboto",
+        "family": "Times New Roman",
         "size": 13,
-        "weight": "normal"
+        "weight": "bold"
       },
       "Linux": {
-        "family": "Roboto",
+        "family": "Times New Roman",
         "size": 13,
-        "weight": "normal"
+        "weight": "bold"
       }
     }
   }
