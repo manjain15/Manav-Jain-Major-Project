@@ -9,7 +9,6 @@ from CTkListbox import *
 from tkcalendar import Calendar
 from tktimepicker import SpinTimePickerModern
 from tktimepicker import constants
-import itertools
 import threading
 import requests
 import zipfile
@@ -19,7 +18,7 @@ import redislite
 import json
 import datetime
 from datetime import datetime, timedelta
-from PIL import Image, ImageTk
+from PIL import Image
 import folium
 from folium import plugins
 import webbrowser
