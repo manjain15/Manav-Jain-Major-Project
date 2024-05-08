@@ -175,12 +175,16 @@ def get_train_info(api_key, start_station, destination_station, departure_day, d
         
         # Parse API response into dictionary
         trip_info_dict = parse_api_response_to_dict(api_url, params, headers)
-        journey_no = 0
-        for journey in trip_info_dict["journeys"]:
-                journey_no += 1
-                departure_time = journey["legs"][0]["origin"]["departureTimeEstimated"][11:16]
-                arrival_time = journey["legs"][-1]["destination"]["arrivalTimeEstimated"][11:16]
-                train_info.append((journey_no, departure_time, arrival_time))
+
+        if trip_info_dict and "journeys" in trip_info_dict:
+                journey_no = 0
+                for journey in trip_info_dict["journeys"]:
+                        journey_no += 1
+                        departure_time = journey["legs"][0]["origin"]["departureTimeEstimated"][11:16]
+                        arrival_time = journey["legs"][-1]["destination"]["arrivalTimeEstimated"][11:16]
+                        train_info.append((journey_no, departure_time, arrival_time))
+        else:
+               train_info = []
         
         return train_info, trip_info_dict
 
