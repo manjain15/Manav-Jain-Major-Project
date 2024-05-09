@@ -422,32 +422,43 @@ class gui_handler:
                 self.show_start_screen()
         
         # CODE FOR FIRST SCREEN
+        # FEEDBACK FOR GUI/SCREEN DESIGN ELEMENTS
+        # Make everything bigger
+        # Change the colour scheme
+        # Make the bus colourful
+        # Use a nicer font
+        # Centre design elements
+
         def show_start_screen(self):
                 if self.current_screen:
                         self.current_screen.destroy()
-                
+                                
                 start_screen = ctk.CTkFrame(self.master)
                 start_screen.pack(side="top", fill="both", expand=True)
+
+                # Ensuring widgets will be centred within the screen
+                start_screen.grid_propagate(False)
+                start_screen.grid_rowconfigure(0, weight=1)
+                start_screen.grid_rowconfigure(7, weight=1)
+                start_screen.grid_columnconfigure(0, weight=1)
+                start_screen.grid_columnconfigure(2, weight=1)
                 
-                heading = ctk.CTkLabel(master=start_screen, justify="center", text="ViewTrip")
-                heading.pack(side="top", fill="x", pady=10)
+                ctk.CTkLabel(master=start_screen, text="ViewTrip").grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
                 
-                welcome_label = ctk.CTkLabel(master=start_screen, text="Welcome to ViewTrip")
-                welcome_label.pack(pady=10)
-                welcome_information = ctk.CTkLabel(master=start_screen, text="To get started, press the plus button\n to add a new trip.")
-                welcome_information.pack(pady=10)
+                ctk.CTkLabel(master=start_screen, text="Welcome to ViewTrip").grid(row=2, column=1, padx=10, pady=10, sticky="nsew")
+                ctk.CTkLabel(master=start_screen, text="To get started, press the plus button\n to add a new trip.").grid(row=3, column=1, padx=10, pady=10, sticky="nsew")
                 
                 start_screen_image = ctk.CTkImage(light_image=Image.open('start_screen_logo.png'), dark_image=Image.open('start_screen_logo.png'), size=(250, 130))
                 image_label = ctk.CTkLabel(start_screen, text="", image=start_screen_image)
-                image_label.pack(pady=10)
+                image_label.grid(row=4, column=1, padx=10, pady=10)
 
                 display_saved_trips_image = ctk.CTkImage(light_image=Image.open('button_display-saved-trips.png'), dark_image=Image.open('button_display-saved-trips.png'), size=(196, 17))                
                 display_saved_trips = ctk.CTkButton(master=start_screen, text="", image=display_saved_trips_image, command=self.show_display_saved_trips_screen)
-                display_saved_trips.pack(side="bottom", pady=10)
+                display_saved_trips.grid(row=5, column=1, padx=10, pady=10)
                 
                 add_new_trip_image = ctk.CTkImage(light_image=Image.open('button_add-new-trip.png'), dark_image=Image.open('button_add-new-trip.png'), size=(87, 17))
                 add_new_trip = ctk.CTkButton(master=start_screen, text="", image=add_new_trip_image, command=lambda: self.show_selection_screen())
-                add_new_trip.pack(side="bottom", pady=10)
+                add_new_trip.grid(row=6, column=1, padx=10, pady=10)
                 
                 self.current_screen = start_screen
         
@@ -461,8 +472,8 @@ class gui_handler:
                 
                 # Ensuring widgets will be centred within the screen
                 selection_screen.grid_propagate(False)
-                selection_screen.grid_columnconfigure(0, weight=1)
-                selection_screen.grid_columnconfigure(4, weight=1)
+                selection_screen.grid_rowconfigure(0, weight=1)
+                selection_screen.grid_rowconfigure(4, weight=1)
 
                 ctk.CTkLabel(selection_screen, text="Select Starting Stop:").grid(row=1, column=2, padx=10, pady=10, sticky="nsew")
                 start_stations = list(all_stops.keys())

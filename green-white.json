@@ -141,7 +141,7 @@
       "macOS": {
         "family": "Times New Roman",
         "size": 13,
-        "weight": "bold"
+        "weight": "normal"
       },
       "Windows": {
         "family": "Times New Roman",
