@@ -4,6 +4,9 @@ from tkinter.ttk import *
 from tkinter.constants import *
 from typing import List
 from tkinter import messagebox
+import tkinter.messagebox
+import messagebox
+from tkinter import font as tkfont
 import customtkinter as ctk
 from CTkListbox import *
 from tkcalendar import Calendar
@@ -223,11 +226,6 @@ with open('api_key.json') as f:
         api_key_file = json.load(f)
 api_key = api_key_file['API_KEY']
 
-# Load the API key from a JSON file
-with open('api_key.json') as f:
-    api_key_file = json.load(f)
-api_key = api_key_file['API_KEY']
-
 # Retrieve GTFS data from the TNSW API
 def get_gtfs_data(api_key, api_url, specific_file):
     headers = {'Authorization': f'apikey {api_key}'}
@@ -285,8 +283,11 @@ root.geometry("600x200")  # Wider window for animation
 root.eval("tk::PlaceWindow . center")
 root.configure(bg="white")
 
+global_font = tkfont.Font(family="Calgary", size=18, weight="bold")
+root.option_add("*Font", global_font)
+
 # Create a label to show the loading message
-loading_label = tk.Label(root, text="Obtaining real-time data...", font=("Times New Roman", 20, ), bg="white", fg="black")
+loading_label = tk.Label(root, text="Obtaining real-time data...", bg="white", fg="black")
 loading_label.pack(pady=10)
 
 # Create a canvas with a white background
@@ -441,7 +442,7 @@ class gui_handler:
                 start_screen.grid_rowconfigure(0, weight=1)
                 start_screen.grid_rowconfigure(7, weight=1)
                 start_screen.grid_columnconfigure(0, weight=1)
-                start_screen.grid_columnconfigure(2, weight=1)
+                start_screen.grid_columnconfigure(11, weight=1)
                 
                 ctk.CTkLabel(master=start_screen, text="ViewTrip").grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
                 
@@ -454,11 +455,11 @@ class gui_handler:
 
                 display_saved_trips_image = ctk.CTkImage(light_image=Image.open('button_display-saved-trips.png'), dark_image=Image.open('button_display-saved-trips.png'), size=(196, 17))                
                 display_saved_trips = ctk.CTkButton(master=start_screen, text="", image=display_saved_trips_image, command=self.show_display_saved_trips_screen)
-                display_saved_trips.grid(row=5, column=1, padx=10, pady=10)
+                display_saved_trips.grid(row=6, column=1, padx=10, pady=10)
                 
                 add_new_trip_image = ctk.CTkImage(light_image=Image.open('button_add-new-trip.png'), dark_image=Image.open('button_add-new-trip.png'), size=(87, 17))
                 add_new_trip = ctk.CTkButton(master=start_screen, text="", image=add_new_trip_image, command=lambda: self.show_selection_screen())
-                add_new_trip.grid(row=6, column=1, padx=10, pady=10)
+                add_new_trip.grid(row=5, column=1, padx=10, pady=10)
                 
                 self.current_screen = start_screen
         
@@ -472,8 +473,8 @@ class gui_handler:
                 
                 # Ensuring widgets will be centred within the screen
                 selection_screen.grid_propagate(False)
-                selection_screen.grid_rowconfigure(0, weight=1)
-                selection_screen.grid_rowconfigure(4, weight=1)
+                selection_screen.grid_columnconfigure(0, weight=1)
+                selection_screen.grid_columnconfigure(4, weight=1)
 
                 ctk.CTkLabel(selection_screen, text="Select Starting Stop:").grid(row=1, column=2, padx=10, pady=10, sticky="nsew")
                 start_stations = list(all_stops.keys())
@@ -529,17 +530,18 @@ class gui_handler:
                                 # Checking if the start and destination stations are valid and if not returning respective error messages
                                 if origin_text not in start_stations:
                                         origin_valid = False
-                                        messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid origin!')
+                                        tkinter.messagebox.showinfo('INVALID INPUT', 'Error: Please enter a valid origin!')
                                         self.show_selection_screen()
                                 elif destination_text not in destination_stations:
                                         destination_valid = False
-                                        messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid destination!')
+                                        tkinter.messagebox.showinfo('INVALID INPUT', 'Error: Please enter a valid destination!')
+  
                                         self.show_selection_screen()
                                 
                                 # Checking if the number of trips is valid
                                 elif int(no_of_trips_text) < 1:
                                         no_of_trips_valid = False
-                                        messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid number of trips!')
+                                        tkinter.messagebox.showinfo('INVALID INPUT', 'Error: Please enter a valid number of trips!')
                                         self.show_selection_screen()
                                 else:
                                         # If all inputs are valid, set the respective variables to True
@@ -552,18 +554,18 @@ class gui_handler:
                                                 departure_date_valid = True
                                         except ValueError:
                                                 departure_date_valid = False
-                                                messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid date format!')
+                                                tkinter.messagebox.showinfo('INVALID INPUT', 'Error: Please enter a valid date format!')
                                                 self.show_selection_screen()
                                         try:
                                                 datetime.strptime(departure_time_text, '%H%M')
                                                 departure_time_valid = True
                                         except ValueError:
                                                 departure_time_valid = False
-                                                messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid time format!')
+                                                tkinter.messagebox.showinfo('INVALID INPUT', 'Error: Please enter a valid time format!')
                                                 self.show_selection_screen()
                                                 
                         else:
-                                messagebox.showerror('INVALID INPUT', 'Error: Please enter valid input for all fields!')
+                                tkinter.messagebox.showinfo('INVALID INPUT', 'Error: Please enter valid input for all fields!')
                                 self.show_selection_screen()
                         
                         # If all inputs are valid, show the train screen

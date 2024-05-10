@@ -139,8 +139,8 @@
     },
     "CTkFont": {
       "macOS": {
-        "family": "Times New Roman",
-        "size": 13,
+        "family": "Calgary",
+        "size": 15,
         "weight": "normal"
       },
       "Windows": {
