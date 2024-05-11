@@ -3,10 +3,8 @@ from tkinter import ttk
 from tkinter.ttk import *
 from tkinter.constants import *
 from typing import List
-from tkinter import messagebox
-import tkinter.messagebox
-import messagebox
 from tkinter import font as tkfont
+from tkinter import messagebox
 import customtkinter as ctk
 from CTkListbox import *
 from tkcalendar import Calendar
@@ -530,18 +528,18 @@ class gui_handler:
                                 # Checking if the start and destination stations are valid and if not returning respective error messages
                                 if origin_text not in start_stations:
                                         origin_valid = False
-                                        tkinter.messagebox.showinfo('INVALID INPUT', 'Error: Please enter a valid origin!')
+                                        messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid origin!')
                                         self.show_selection_screen()
                                 elif destination_text not in destination_stations:
                                         destination_valid = False
-                                        tkinter.messagebox.showinfo('INVALID INPUT', 'Error: Please enter a valid destination!')
+                                        messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid destination!')
   
                                         self.show_selection_screen()
                                 
                                 # Checking if the number of trips is valid
                                 elif int(no_of_trips_text) < 1:
                                         no_of_trips_valid = False
-                                        tkinter.messagebox.showinfo('INVALID INPUT', 'Error: Please enter a valid number of trips!')
+                                        messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid number of trips!')
                                         self.show_selection_screen()
                                 else:
                                         # If all inputs are valid, set the respective variables to True
@@ -554,18 +552,18 @@ class gui_handler:
                                                 departure_date_valid = True
                                         except ValueError:
                                                 departure_date_valid = False
-                                                tkinter.messagebox.showinfo('INVALID INPUT', 'Error: Please enter a valid date format!')
+                                                messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid date format!')
                                                 self.show_selection_screen()
                                         try:
                                                 datetime.strptime(departure_time_text, '%H%M')
                                                 departure_time_valid = True
                                         except ValueError:
                                                 departure_time_valid = False
-                                                tkinter.messagebox.showinfo('INVALID INPUT', 'Error: Please enter a valid time format!')
+                                                messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid time format!')
                                                 self.show_selection_screen()
                                                 
                         else:
-                                tkinter.messagebox.showinfo('INVALID INPUT', 'Error: Please enter valid input for all fields!')
+                                messagebox.showerror('INVALID INPUT', 'Error: Please enter valid input for all fields!')
                                 self.show_selection_screen()
                         
                         # If all inputs are valid, show the train screen
