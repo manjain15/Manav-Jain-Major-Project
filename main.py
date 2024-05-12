@@ -26,6 +26,7 @@ import webbrowser
 import os
 import time
 import pygame.mixer
+import ast
 pygame.mixer.init()
 from TransportNSW import TransportNSW
 tnsw = TransportNSW()
@@ -186,11 +187,11 @@ def get_train_info(api_key, start_station, destination_station, departure_day, d
                         train_info.append((journey_no, departure_time, arrival_time))
         else:
                train_info = []
-        
+
         return train_info, trip_info_dict
 
 # Detailed tree view for both detailed_journey_info_screen and saved_trip_detailed_screen
-def detailed_tree_view(screen):
+def detailed_tree_view(screen, row):
         tree = ttk.Treeview(screen, columns=("Route", "Origin", "Departure", "Destination", "Arrival"), show="headings")
         tree.column("Route",anchor="center", width=50)
         tree.heading("Route", text="Route")
@@ -202,7 +203,7 @@ def detailed_tree_view(screen):
         tree.heading("Destination", text="Destination")
         tree.column("Arrival",anchor="center", width=75)
         tree.heading("Arrival", text="Arrival")
-        tree.grid(row=1, column=0, pady=10, padx=0)
+        tree.grid(row=row, column=1, pady=10)
 
         return tree
 
@@ -276,12 +277,12 @@ def parse_gtfs_data(data, specific_file):
 # LOADING SCREEN CODE
 # Create the main window on the main thread
 root = tk.Tk()  # This must be on the main thread
-root.title("Obtaining real-time data...")
+root.title("ViewTrip")
 root.geometry("600x200")  # Wider window for animation
 root.eval("tk::PlaceWindow . center")
 root.configure(bg="white")
 
-global_font = tkfont.Font(family="Calgary", size=18, weight="bold")
+global_font = tkfont.Font(family="Canela Text Trial", size=18, weight="bold")
 root.option_add("*Font", global_font)
 
 # Create a label to show the loading message
@@ -319,7 +320,7 @@ move_bus()
 # Create a progress bar
 progress_var = tk.IntVar()  # Variable for the progress bar
 progress_bar = ttk.Progressbar(root, length=300, variable=progress_var, maximum=100)
-progress_bar.pack(pady=10)
+progress_bar.pack(pady=13)
 
 # Function to update the progress bar
 def update_progress():
@@ -342,27 +343,27 @@ data_container = {}
 # Function to fetch data in the background
 def get_parse_bus_data():
     # Record the start time
-    start_time = time.time()
+    # start_time = time.time()
 
     # Fetch bus data
     bus_data = get_gtfs_data(api_key, 'https://api.transport.nsw.gov.au/v1/gtfs/schedule/buses', specific_file="stops.txt")
-    print("Bus data fetched in:", time.time() - start_time)
+    # print("Bus data fetched in:", time.time() - start_time)
 
     # Parse bus data
     data_container['bus'] = parse_gtfs_data(bus_data, specific_file="stops.txt")
-    print("Bus data parsed in:", time.time() - start_time)
+    # print("Bus data parsed in:", time.time() - start_time)
 
 def get_parse_train_data():
     # Record the start time
-    start_time = time.time()
+    # start_time = time.time()
 
     # Fetch train data
     train_data = get_gtfs_data(api_key, 'https://api.transport.nsw.gov.au/v1/gtfs/schedule/sydneytrains', specific_file="stops.txt")
-    print("Train data fetched in:", time.time() - start_time)
+    # print("Train data fetched in:", time.time() - start_time)
 
     # Parse train data
     data_container['train'] = parse_gtfs_data(train_data, specific_file="stops.txt")
-    print("Train data parsed in:", time.time() - start_time)
+    # print("Train data parsed in:", time.time() - start_time)
 
 # Background threads to fetch bus and train data
 bus_thread = threading.Thread(target=lambda: get_parse_bus_data())
@@ -422,11 +423,8 @@ class gui_handler:
         
         # CODE FOR FIRST SCREEN
         # FEEDBACK FOR GUI/SCREEN DESIGN ELEMENTS
-        # Make everything bigger
         # Change the colour scheme
         # Make the bus colourful
-        # Use a nicer font
-        # Centre design elements
 
         def show_start_screen(self):
                 if self.current_screen:
@@ -442,21 +440,21 @@ class gui_handler:
                 start_screen.grid_columnconfigure(0, weight=1)
                 start_screen.grid_columnconfigure(11, weight=1)
                 
-                ctk.CTkLabel(master=start_screen, text="ViewTrip").grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
+                ctk.CTkLabel(master=start_screen, text="ViewTrip", font=("Canela Deck Trial", 25)).grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
                 
-                ctk.CTkLabel(master=start_screen, text="Welcome to ViewTrip").grid(row=2, column=1, padx=10, pady=10, sticky="nsew")
-                ctk.CTkLabel(master=start_screen, text="To get started, press the plus button\n to add a new trip.").grid(row=3, column=1, padx=10, pady=10, sticky="nsew")
+                ctk.CTkLabel(master=start_screen, text="Welcome to ViewTrip", font=("Canela Text Trial", 20)).grid(row=2, column=1, padx=10, pady=10, sticky="nsew")
+                ctk.CTkLabel(master=start_screen, text="To get started, press the plus button\n to add a new trip").grid(row=3, column=1, padx=10, pady=10, sticky="nsew")
                 
                 start_screen_image = ctk.CTkImage(light_image=Image.open('start_screen_logo.png'), dark_image=Image.open('start_screen_logo.png'), size=(250, 130))
                 image_label = ctk.CTkLabel(start_screen, text="", image=start_screen_image)
                 image_label.grid(row=4, column=1, padx=10, pady=10)
 
                 display_saved_trips_image = ctk.CTkImage(light_image=Image.open('button_display-saved-trips.png'), dark_image=Image.open('button_display-saved-trips.png'), size=(196, 17))                
-                display_saved_trips = ctk.CTkButton(master=start_screen, text="", image=display_saved_trips_image, command=self.show_display_saved_trips_screen)
+                display_saved_trips = ctk.CTkButton(master=start_screen, text="Display Saved Trips", command=self.show_display_saved_trips_screen)
                 display_saved_trips.grid(row=6, column=1, padx=10, pady=10)
                 
                 add_new_trip_image = ctk.CTkImage(light_image=Image.open('button_add-new-trip.png'), dark_image=Image.open('button_add-new-trip.png'), size=(87, 17))
-                add_new_trip = ctk.CTkButton(master=start_screen, text="", image=add_new_trip_image, command=lambda: self.show_selection_screen())
+                add_new_trip = ctk.CTkButton(master=start_screen, text="+", command=lambda: self.show_selection_screen())
                 add_new_trip.grid(row=5, column=1, padx=10, pady=10)
                 
                 self.current_screen = start_screen
@@ -487,9 +485,9 @@ class gui_handler:
                 destination_combobox.grid(row=4, column=2, padx=10, pady=10, sticky="nsew")
 
                 ctk.CTkLabel(selection_screen, text="Select Departure Date:").grid(row=5, column=2, padx=10, pady=10, sticky="nsew")
-                cal = Calendar(selection_screen, selectmode = 'day', date_pattern = "yyyyMMdd", showweeknumbers=False ,
-                               font="Calibri 13", cursor="hand1", background="black", foreground="white", headersbackground="white", 
-                               headersforeground="white", selectbackground="orange", selectforeground="green", normalbackground="white",
+                cal = Calendar(selection_screen, selectmode = 'day', date_pattern = "yyyyMMdd", showweeknumbers=False,
+                               font="Canela 13" ,cursor="hand1", background="black", foreground="white", headersbackground="white", 
+                               headersforeground="white", selectbackground="white", selectforeground="#FFA500", normalbackground="white",
                                normalforeground="white", weekendbackground="white", weekendforeground="white", othermonthbackground="white",)
 
                 cal.grid(row=6, column=2, padx=10, pady=10, sticky="nsew")
@@ -499,7 +497,7 @@ class gui_handler:
                 time_picker = SpinTimePickerModern(selection_screen)
                 time_picker.addAll(constants.HOURS24)  # adds hours clock, minutes and period
                 time_picker.configureAll(bg="#ffffff", height=1, fg="#000000", font=("Calibri", 13), hoverbg="#ffffff",
-                                        hovercolor="#014421", clickedbg="#000000", clickedcolor="#ff5f00")
+                                        hovercolor="#014421", clickedbg="#000000", clickedcolor="#FFA500")
                 time_picker.configure_separator(fg="#000000", bg="#ffffff")
                 time_picker.grid(row=8, column=2, padx=10, pady=10, sticky="nsew")
                 
@@ -572,11 +570,11 @@ class gui_handler:
                                 selection_screen.destroy()
                 
                 next_button_image = ctk.CTkImage(light_image=Image.open('button_next.png'), dark_image=Image.open('button_next.png'), size=(109, 17))
-                next_button = ctk.CTkButton(selection_screen, text="", image=next_button_image, command=check_validity)
+                next_button = ctk.CTkButton(selection_screen, text="Next", command=check_validity)
                 next_button.grid(row=11, column=2, columnspan=2, pady=10)
 
                 back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
-                back_button = ctk.CTkButton(selection_screen, text="", image=back_button_image, command=self.show_start_screen)
+                back_button = ctk.CTkButton(selection_screen, text="Back", command=self.show_start_screen)
                 back_button.grid(row=12, column=2, pady=10)
                 
                 self.current_screen = selection_screen
@@ -591,6 +589,8 @@ class gui_handler:
                 
                 # Ensuring widgets will be centred within the screen
                 train_screen.grid_propagate(False)
+                train_screen.grid_rowconfigure(0, weight=1)
+                train_screen.grid_rowconfigure(4, weight=1)
                 train_screen.grid_columnconfigure(0, weight=1)
                 train_screen.grid_columnconfigure(2, weight=1)
 
@@ -611,6 +611,7 @@ class gui_handler:
                         if item_id:  # Ensure that an item was clicked
                                 item_values = tree.item(item_id, "values")
                                 if item_values:
+                                        train_screen.destroy()
                                         self.show_detailed_journey_info_screen(trip_info_dict, item_values, start_station, destination_station, departure_day, departure_time, no_of_trips)
                 
                 tree.bind("<ButtonRelease-1>", on_item_click)
@@ -630,7 +631,7 @@ class gui_handler:
                         tree.insert("", "end", values=train)
                 
                 back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
-                back_button = ctk.CTkButton(train_screen, text="", image=back_button_image, command=self.show_selection_screen)
+                back_button = ctk.CTkButton(train_screen, text="Back", command=self.show_selection_screen)
                 back_button.grid(row=3, column=1, pady=10)
                 
                 self.current_screen = train_screen
@@ -641,19 +642,17 @@ class gui_handler:
                 
                 detailed_journey_screen = ctk.CTkFrame(self.master)
                 detailed_journey_screen.pack(fill="both", expand=True, padx=10, pady=10)
+
+                # Ensuring widgets will be centred within the screen
+                detailed_journey_screen.grid_propagate(False)
+                detailed_journey_screen.grid_rowconfigure(0, weight=1)
+                detailed_journey_screen.grid_rowconfigure(6, weight=1)
+                detailed_journey_screen.grid_columnconfigure(0, weight=1)
+                detailed_journey_screen.grid_columnconfigure(2, weight=1)
                 
-                tree = detailed_tree_view(detailed_journey_screen)
-                
-                # Handler for item click event
-                def on_item_click(event):
-                        item_id = tree.focus()  # Get the ID of the clicked item
-                        if item_id:  # Ensure that an item was clicked
-                                item_values = tree.item(item_id, "values")
-                                detailed_information = ctk.CTkLabel(detailed_journey_screen, text=(f"Route: {item_values[0]}\n Origin: {item_values[1]}\n Departure: {item_values[2]}\n Destination: {item_values[3]}\n Arrival: {item_values[4]}"))
-                                detailed_information.grid(pady=10, padx=0)
-                                detailed_journey_screen.after(3000, detailed_information.destroy)
-                
-                tree.bind("<ButtonRelease-1>", on_item_click)
+                ctk.CTkLabel(detailed_journey_screen, text=f"Journey Details from {start_station} to {destination_station}").grid(row=1, column=1, pady=10)
+
+                tree = detailed_tree_view(detailed_journey_screen, 2)
                 
                 train_info = []
                 coords = {}
@@ -669,8 +668,7 @@ class gui_handler:
                                                 coords.update({stop_name:coord})
                 
                 # Create a map centered at the mean latitude and longitude of the coordinates
-                map_center = [sum(coord[0] for coord in coords.values()) / len(coords.values()),
-                        sum(coord[1] for coord in coords.values()) / len(coords.values())]
+                map_center = [sum(coord[0] for coord in coords.values()) / len(coords.values()), sum(coord[1] for coord in coords.values()) / len(coords.values())]
                 
                 # Create the map
                 m = folium.Map(location=map_center, zoom_start=12)
@@ -717,12 +715,12 @@ class gui_handler:
                 
                 # Back button to return to the previous screen
                 back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
-                back_button = ctk.CTkButton(detailed_journey_screen, text="", image=back_button_image, command=lambda: self.show_train_screen(start_station, destination_station, departure_day, departure_time, no_of_trips))
-                back_button.grid(row=2, column=0, pady=10, padx=5)
+                back_button = ctk.CTkButton(detailed_journey_screen, text="Back", command=lambda: self.show_train_screen(start_station, destination_station, departure_day, departure_time, no_of_trips))
+                back_button.grid(row=3, column=1, pady=10)
                 
                 save_trip_image = ctk.CTkImage(light_image=Image.open('button_save-trip.png'), dark_image=Image.open('button_save-trip.png'), size=(134, 17))
-                save_trip_button = ctk.CTkButton(detailed_journey_screen, text="", image=save_trip_image , command=save_trip)
-                save_trip_button.grid(row=3, column=0, pady=10, padx=5)
+                save_trip_button = ctk.CTkButton(detailed_journey_screen, text="Save Trip", command=save_trip)
+                save_trip_button.grid(row=4, column=1, pady=10)
 
                 # Display the map in a web browser
                 def display_map():
@@ -730,8 +728,8 @@ class gui_handler:
                         webbrowser.open_new_tab(filename)
 
                 display_map_image = ctk.CTkImage(light_image=Image.open('button_display-map.png'), dark_image=Image.open('button_display-map.png'), size=(153, 19))
-                display_map_button = ctk.CTkButton(detailed_journey_screen, text="", image=display_map_image, command=display_map)
-                display_map_button.grid(row=4, column=0, pady=10, padx=5)
+                display_map_button = ctk.CTkButton(detailed_journey_screen, text="Display Map", command=display_map)
+                display_map_button.grid(row=5, column=1, pady=10)
 
                 self.current_screen = detailed_journey_screen
         
@@ -744,6 +742,8 @@ class gui_handler:
                 
                 # Ensuring widgets will be centred within the screen
                 display_saved_trips_screen.grid_propagate(False)
+                display_saved_trips_screen.grid_rowconfigure(0, weight=1)
+                display_saved_trips_screen.grid_rowconfigure(4, weight=1)
                 display_saved_trips_screen.grid_columnconfigure(0, weight=1)
                 display_saved_trips_screen.grid_columnconfigure(2, weight=1)
 
@@ -776,6 +776,7 @@ class gui_handler:
                                 if item_id:  # Ensure that an item was clicked
                                         item_values = trips_tree.item(item_id, "values")
                                         if item_values:
+                                                display_saved_trips_screen.destroy()
                                                 self.show_saved_trip_detailed_screen(item_values)
 
                         # Handler for deleting trip
@@ -783,6 +784,7 @@ class gui_handler:
                                 item_id = trips_tree.focus()
                                 if item_id:
                                         redis_connection.delete(trips_tree.item(trips_tree.focus(), "text"))
+                                        display_saved_trips_screen.destroy()
                                         self.show_start_screen()
                                         display_saved_trips_screen.destroy()
                                 else:
@@ -793,11 +795,11 @@ class gui_handler:
                         trips_tree.bind("<ButtonRelease-1>", on_single_click)
                         
                         back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
-                        back_button = ctk.CTkButton(master=display_saved_trips_screen, text="", image=back_button_image, command=self.show_start_screen)
+                        back_button = ctk.CTkButton(master=display_saved_trips_screen, text="Back", command=self.show_start_screen)
                         back_button.grid(row=2, column=1, pady=10)
 
                         delete_button_image = ctk.CTkImage(light_image=Image.open('button_delete-trip.png'), dark_image=Image.open('button_delete-trip.png'), size=(157, 17))
-                        delete_button = ctk.CTkButton(master=display_saved_trips_screen, text="", image=delete_button_image, command=on_delete)
+                        delete_button = ctk.CTkButton(master=display_saved_trips_screen, text="Delete Trip", command=on_delete)
                         delete_button.grid(row=3, column=1, pady=10)
                         
                         self.current_screen = display_saved_trips_screen
@@ -809,7 +811,27 @@ class gui_handler:
                 saved_trip_detailed_screen = ctk.CTkFrame(self.master)
                 saved_trip_detailed_screen.pack(fill="both", expand=True, padx=10, pady=10)
                 
-                detailed_trips_tree = detailed_tree_view(saved_trip_detailed_screen)
+                # Ensuring widgets will be centred within the screen
+                saved_trip_detailed_screen.grid_propagate(False)
+                saved_trip_detailed_screen.grid_rowconfigure(0, weight=1)
+                saved_trip_detailed_screen.grid_rowconfigure(3, weight=1)
+                saved_trip_detailed_screen.grid_columnconfigure(0, weight=1)
+                saved_trip_detailed_screen.grid_columnconfigure(2, weight=1)
+
+                ctk.CTkLabel(saved_trip_detailed_screen, text=f"Journey Details for {treeview_values[0]}").grid(row=1, column=1, pady=10)
+                
+                detailed_trips_tree = detailed_tree_view(saved_trip_detailed_screen, 2)
+
+                values = redis_connection.get(treeview_values[0]).decode('utf-8')
+                list_of_values = ast.literal_eval(values)
+                start_station_name = list_of_values[0][1]
+                destination_station_name = list_of_values[-1][3]
+                for key, val in all_stops.items():
+                        if key in start_station_name or start_station_name in key:
+                              start_station_name = key
+                for key, val in all_stops.items():
+                        if key in destination_station_name or destination_station_name in key:
+                              destination_station_name = key
 
                 current_date = datetime.now().strftime("%Y%m%d")
                 current_time = datetime.now().strftime("%H%M")
@@ -817,43 +839,14 @@ class gui_handler:
                 # Convert to UTC
                 converted_date, converted_time = add_hours_to_sydney_time(current_date, current_time)
 
-                train_info, trip_info_dict = get_train_info(api_key, start_stop_id, destination_stop_id, converted_date, converted_time, 3)
-
-                train_info = []
-                for key,val in trip_info_dict["journeys"][0].items():
-                        if key == "legs":
-                                legs = val
-                                for leg in legs:
-                                        transport = leg["transportation"].get("disassembledName")
-                                        if transport is None:
-                                                transport = "Walk"
-                                        if transport == "M":
-                                                transport == "Metro"
-                                        origin = leg["origin"]["name"]
-                                        departure = leg["origin"]["departureTimeEstimated"][11:16]
-                                        destination = leg["destination"]["name"]
-                                        arrival = leg["destination"]["arrivalTimeEstimated"][11:16]
-
-                                        # Append train information to the list
-                                        train_info.append((transport, origin, departure, destination, arrival))
-
-                for train in train_info:
-                        detailed_trips_tree.insert("", "end", values=train)
-
-                # Handler for item click event
-                def on_item_click(event):
-                        item_id = detailed_trips_tree.focus()  # Get the ID of the clicked item
-                        if item_id:  # Ensure that an item was clicked
-                                item_values = detailed_trips_tree.item(item_id, "values")
-                                detailed_information = ctk.CTkLabel(saved_trip_detailed_screen, text=(f"Route: {item_values[0]}\n Origin: {item_values[1]}\n Departure: {item_values[2]}\n Destination: {item_values[3]}\n Arrival: {item_values[4]}"))
-                                detailed_information.grid(pady=10, padx=0)
-                                saved_trip_detailed_screen.after(3000, detailed_information.destroy)
+                self.show_train_screen(start_station_name, destination_station_name, converted_date, converted_time, 3)
+                saved_trip_detailed_screen.destroy()
+                saved_trip_detailed_screen = None
                 
-                detailed_trips_tree.bind("<ButtonRelease-1>", on_item_click)
-                
-                back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
-                back_button = ctk.CTkButton(master=saved_trip_detailed_screen, text="", image=back_button_image, command=self.show_display_saved_trips_screen)
-                back_button.grid(row=2, column=0, columnspan=2, pady=10)
+                if saved_trip_detailed_screen is not None:
+                        back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
+                        back_button = ctk.CTkButton(master=saved_trip_detailed_screen, text="Back", command=self.show_display_saved_trips_screen)
+                        back_button.grid(row=3, column=1, pady=10)
                 
                 self.current_screen = saved_trip_detailed_screen
     
@@ -862,13 +855,12 @@ def main():
         pygame.mixer.music.load("startup_sound.mp3")
         pygame.mixer.music.play()
 
-
         root = tk.Tk()
-        root.wm_geometry("505x750")
-        root.resizable(False, False)
+        root.wm_geometry("515x750")
+        root.resizable(True, True)
         main = gui_handler(root)
         def on_closing():
-                redis_connection.flushdb()
+                # redis_connection.flushdb()
                 redis_connection.close()
                 root.destroy()
         
