@@ -647,10 +647,9 @@ class gui_handler:
                 detailed_journey_screen.grid_propagate(False)
                 detailed_journey_screen.grid_rowconfigure(0, weight=1)
                 detailed_journey_screen.grid_rowconfigure(6, weight=1)
-                detailed_journey_screen.grid_columnconfigure(0, weight=1)
-                detailed_journey_screen.grid_columnconfigure(2, weight=1)
+                detailed_journey_screen.grid_columnconfigure(1, weight=1)
                 
-                ctk.CTkLabel(detailed_journey_screen, text=f"Journey Details from {start_station} to {destination_station}").grid(row=1, column=1, pady=10)
+                ctk.CTkLabel(detailed_journey_screen, text=f"Journey Details from {start_station} to \n {destination_station}").grid(row=1, column=1, pady=10)
 
                 tree = detailed_tree_view(detailed_journey_screen, 2)
                 
@@ -856,11 +855,11 @@ def main():
         pygame.mixer.music.play()
 
         root = tk.Tk()
-        root.wm_geometry("515x750")
-        root.resizable(True, True)
+        root.wm_geometry("570x750")
+        root.resizable(False, False)
         main = gui_handler(root)
         def on_closing():
-                # redis_connection.flushdb()
+                redis_connection.flushdb()
                 redis_connection.close()
                 root.destroy()
         
