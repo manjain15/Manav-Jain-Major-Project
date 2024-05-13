@@ -526,18 +526,18 @@ class gui_handler:
                                 # Checking if the start and destination stations are valid and if not returning respective error messages
                                 if origin_text not in start_stations:
                                         origin_valid = False
-                                        messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid origin!')
+                                        # messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid origin!')
                                         self.show_selection_screen()
                                 elif destination_text not in destination_stations:
                                         destination_valid = False
-                                        messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid destination!')
+                                        # messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid destination!')
   
                                         self.show_selection_screen()
                                 
                                 # Checking if the number of trips is valid
                                 elif int(no_of_trips_text) < 1:
                                         no_of_trips_valid = False
-                                        messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid number of trips!')
+                                        # messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid number of trips!')
                                         self.show_selection_screen()
                                 else:
                                         # If all inputs are valid, set the respective variables to True
@@ -550,18 +550,18 @@ class gui_handler:
                                                 departure_date_valid = True
                                         except ValueError:
                                                 departure_date_valid = False
-                                                messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid date format!')
+                                                # messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid date format!')
                                                 self.show_selection_screen()
                                         try:
                                                 datetime.strptime(departure_time_text, '%H%M')
                                                 departure_time_valid = True
                                         except ValueError:
                                                 departure_time_valid = False
-                                                messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid time format!')
+                                                # messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid time format!')
                                                 self.show_selection_screen()
                                                 
                         else:
-                                messagebox.showerror('INVALID INPUT', 'Error: Please enter valid input for all fields!')
+                                # messagebox.showerror('INVALID INPUT', 'Error: Please enter valid input for all fields!')
                                 self.show_selection_screen()
                         
                         # If all inputs are valid, show the train screen
@@ -749,7 +749,7 @@ class gui_handler:
                 all_keys = redis_connection.keys()
                 
                 if all_keys == []:
-                        messagebox.showerror('INVALID INPUT', 'Error: Please save a trip first')
+                        # messagebox.showerror('INVALID INPUT', 'Error: Please save a trip first')
                         self.show_start_screen()
                         display_saved_trips_screen.destroy()
                 else:
@@ -787,7 +787,7 @@ class gui_handler:
                                         self.show_start_screen()
                                         display_saved_trips_screen.destroy()
                                 else:
-                                        messagebox.showerror('INVALID INPUT', 'Error: Please select a trip to delete')
+                                        # messagebox.showerror('INVALID INPUT', 'Error: Please select a trip to delete')
                                         self.show_display_saved_trips_screen()
                         
                         trips_tree.bind("<Double-1>", on_double_click)
