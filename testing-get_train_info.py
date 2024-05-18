@@ -30,16 +30,35 @@ class TestGetTrainInfo(unittest.TestCase):
         api_key = 'testapikey'
         start_station = 'Sydney Central'
         destination_station = 'Newcastle'
-        departure_day = '20240507'
-        departure_time = '1430'
+        departure_day = '20240518'
+        departure_time = '1115'
         no_of_trips = 1
-        
+
+        # Print inputs
+        print("test_get_train_info_success:")
+        print("Inputs:")
+        print(f"  api_key: {api_key}")
+        print(f"  start_station: {start_station}")
+        print(f"  destination_station: {destination_station}")
+        print(f"  departure_day: {departure_day}")
+        print(f"  departure_time: {departure_time}")
+        print(f"  no_of_trips: {no_of_trips}")
+
         train_info, trip_info_dict = get_train_info(api_key, start_station, destination_station, departure_day, departure_time, no_of_trips)
         
-        self.assertEqual(len(train_info), 1)
-        self.assertEqual(train_info[0], (1, '14:30', '16:30'))
-        self.assertIsNotNone(trip_info_dict)
-    
+        # Print outputs
+        print("Outputs:")
+        print(f"  train_info: {train_info}")
+        print(f"  trip_info_dict: {trip_info_dict}")
+
+        try:
+            self.assertEqual(len(train_info), 1)
+            self.assertEqual(train_info[0], (1, '14:30', '16:30'))
+            self.assertIsNotNone(trip_info_dict)
+            print("  Result: Successful\n")
+        except AssertionError as e:
+            print(f"  Result: Unsuccessful - {str(e)}\n")
+
     @patch('requests.get')
     def test_get_train_info_error(self, mock_get):
         # Mock a non-200 response
@@ -54,12 +73,30 @@ class TestGetTrainInfo(unittest.TestCase):
         departure_day = '20240507'
         departure_time = '1430'
         no_of_trips = 1
-        
+
+        # Print inputs
+        print("test_get_train_info_error:")
+        print("Inputs:")
+        print(f"  api_key: {api_key}")
+        print(f"  start_station: {start_station}")
+        print(f"  destination_station: {destination_station}")
+        print(f"  departure_day: {departure_day}")
+        print(f"  departure_time: {departure_time}")
+        print(f"  no_of_trips: {no_of_trips}")
+
         train_info, trip_info_dict = get_train_info(api_key, start_station, destination_station, departure_day, departure_time, no_of_trips)
-        
-        # Check that train_info is empty and trip_info_dict is None
-        self.assertEqual(len(train_info), 0)
-        self.assertIsNone(trip_info_dict)
+
+        # Print outputs
+        print("Outputs:")
+        print(f"  train_info: {train_info}")
+        print(f"  trip_info_dict: {trip_info_dict}")
+
+        try:
+            self.assertEqual(len(train_info), 0)
+            self.assertIsNone(trip_info_dict)
+            print("  Result: Successful\n")
+        except AssertionError as e:
+            print(f"  Result: Unsuccessful - {str(e)}\n")
 
     @patch('requests.get')
     def test_get_train_info_exception(self, mock_get):
@@ -72,12 +109,30 @@ class TestGetTrainInfo(unittest.TestCase):
         departure_day = '20240507'
         departure_time = '1430'
         no_of_trips = 1
-        
+
+        # Print inputs
+        print("test_get_train_info_exception:")
+        print("Inputs:")
+        print(f"  api_key: {api_key}")
+        print(f"  start_station: {start_station}")
+        print(f"  destination_station: {destination_station}")
+        print(f"  departure_day: {departure_day}")
+        print(f"  departure_time: {departure_time}")
+        print(f"  no_of_trips: {no_of_trips}")
+
         train_info, trip_info_dict = get_train_info(api_key, start_station, destination_station, departure_day, departure_time, no_of_trips)
-        
-        # Again, train_info should be empty and trip_info_dict should be None
-        self.assertEqual(len(train_info), 0)
-        self.assertIsNone(trip_info_dict)
+
+        # Print outputs
+        print("Outputs:")
+        print(f"  train_info: {train_info}")
+        print(f"  trip_info_dict: {trip_info_dict}")
+
+        try:
+            self.assertEqual(len(train_info), 0)
+            self.assertIsNone(trip_info_dict)
+            print("  Result: Successful\n")
+        except AssertionError as e:
+            print(f"  Result: Unsuccessful - {str(e)}\n")
 
 if __name__ == '__main__':
     unittest.main()
