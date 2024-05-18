@@ -552,6 +552,17 @@ class gui_handler:
                                                 departure_date_valid = False
                                                 # messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid date format!')
                                                 self.show_selection_screen()
+                                        
+                                        if departure_day_text < datetime.now().strftime('%Y%m%d'):
+                                                departure_date_valid = False
+                                                # messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid date!')
+                                                self.show_selection_screen()
+                                        
+                                        if int(departure_day_text) >= int(datetime.now().strftime('%Y%m%d')) + 400:
+                                                departure_date_valid = False
+                                                # messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid date!')
+                                                self.show_selection_screen()
+
                                         try:
                                                 datetime.strptime(departure_time_text, '%H%M')
                                                 departure_time_valid = True
