@@ -499,6 +499,9 @@ class gui_handler:
                 time_picker.configureAll(bg="#ffffff", height=1, fg="#000000", font=("Calibri", 13), hoverbg="#ffffff",
                                         hovercolor="#014421", clickedbg="#000000", clickedcolor="#FFA500")
                 time_picker.configure_separator(fg="#000000", bg="#ffffff")
+                default_time = datetime.now().strftime('%H%M')
+                time_picker.set24Hrs(default_time[0:2])
+                time_picker.setMins(default_time[2:4])
                 time_picker.grid(row=8, column=2, padx=10, pady=10, sticky="nsew")
                 
                 ctk.CTkLabel(selection_screen, text="How many trip options would you like?").grid(row=9, column=2, padx=10, pady=10, sticky="nsew")
