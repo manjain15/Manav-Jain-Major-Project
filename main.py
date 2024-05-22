@@ -575,7 +575,8 @@ class gui_handler:
                                                 self.show_selection_screen()
                                                 
                         else:
-                                # messagebox.showerror('INVALID INPUT', 'Error: Please enter valid input for all fields!')
+                                import easygui
+                                easygui.msgbox("Error: Please enter valid input for all fields!", title="INVALID INPUT")
                                 self.show_selection_screen()
                         
                         # If all inputs are valid, show the train screen
