@@ -584,7 +584,7 @@ class gui_handler:
                         if origin_valid and destination_valid and departure_date_valid and departure_time_valid and no_of_trips_valid:
                                 self.show_train_screen(start_station_combobox.get(), destination_combobox.get(), cal.get_date(), departure_time_text, int(no_of_trips_entry.get()))
                                 selection_screen.destroy()
-                
+
                 # next_button_image = ctk.CTkImage(light_image=Image.open('button_next.png'), dark_image=Image.open('button_next.png'), size=(109, 17))
                 next_button = ctk.CTkButton(selection_screen, text="Next", command=check_validity)
                 next_button.grid(row=11, column=2, columnspan=2, pady=10)
@@ -594,7 +594,7 @@ class gui_handler:
                 back_button.grid(row=12, column=2, pady=10)
                 
                 self.current_screen = selection_screen
-        
+
         # CODE FOR THIRD SCREEN
         def show_train_screen(self, start_station, destination_station, departure_day, departure_time, no_of_trips):
                 if self.current_screen:
