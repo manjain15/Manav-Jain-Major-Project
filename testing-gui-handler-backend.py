@@ -21,11 +21,13 @@ class TestGuiHandler(unittest.TestCase):
         self.gui.show_start_screen()
         self.assertEqual(self.gui.current_screen._name, "!ctkframe2")  # Adjusted expected name
         print("Start screen transition test passed.")
+        print(f"Current screen name: {self.gui.current_screen._name}")
 
     def test_show_selection_screen(self):
         self.gui.show_selection_screen()
         self.assertEqual(self.gui.current_screen._name, "!ctkframe2")  # Adjusted expected name
         print("Selection screen transition test passed.")
+        print(f"Current screen name: {self.gui.current_screen._name}")
 
     def test_show_train_screen(self):
         start_station = "Norwest Station, Norwest Bvd"  # Use actual existing start station
@@ -36,6 +38,8 @@ class TestGuiHandler(unittest.TestCase):
         self.gui.show_train_screen(start_station, destination_station, departure_day, departure_time, no_of_trips)
         self.assertEqual(self.gui.current_screen._name, "!ctkframe2")  # Adjusted expected name
         print("Train screen transition test passed.")
+        print(f"Inputs: {start_station}, {destination_station}, {departure_day}, {departure_time}, {no_of_trips}")
+        print(f"Current screen name: {self.gui.current_screen._name}")
 
     def test_valid_train_screen_inputs(self):
         start_station = "Norwest Station, Norwest Bvd"  # Use actual existing start station
@@ -62,6 +66,7 @@ class TestGuiHandler(unittest.TestCase):
         self.gui.current_screen.children['!ctkbutton'].invoke()
         self.assertEqual(self.gui.current_screen._name, "!ctkframe3")  # Adjusted expected name
         print("Valid train screen inputs test passed.")
+        print(f"Current screen name: {self.gui.current_screen._name}")
 
     def test_invalid_train_screen_inputs(self):
         start_station = "Nonexistent Start Station"  # Use a non-existent start station
@@ -90,6 +95,7 @@ class TestGuiHandler(unittest.TestCase):
         # self.gui.current_screen.children['!ctkbutton'].invoke()
         self.assertEqual(self.gui.current_screen._name, "!ctkframe")
         print("Invalid train screen inputs test passed.")
+        print(f"Current screen name: {self.gui.current_screen._name}")
 
 if __name__ == "__main__":
     unittest.main()
