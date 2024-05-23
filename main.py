@@ -4,7 +4,7 @@ from tkinter.ttk import *
 from tkinter.constants import *
 from typing import List
 from tkinter import font as tkfont
-from tkinter import messagebox
+import easygui
 import customtkinter as ctk
 from CTkListbox import *
 from tkcalendar import Calendar
@@ -531,18 +531,18 @@ class gui_handler:
                                 # Checking if the start and destination stations are valid and if not returning respective error messages
                                 if origin_text not in start_stations:
                                         origin_valid = False
-                                        # messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid origin!')
+                                        easygui.msgbox("Error: Please enter a valid origin!", title="INVALID INPUT")
                                         self.show_selection_screen()
                                 elif destination_text not in destination_stations:
                                         destination_valid = False
-                                        # messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid destination!')
+                                        easygui.msgbox("Error: Please enter a valid destination!", title="INVALID INPUT")
   
                                         self.show_selection_screen()
                                 
                                 # Checking if the number of trips is valid
                                 elif int(no_of_trips_text) < 1:
                                         no_of_trips_valid = False
-                                        # messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid number of trips!')
+                                        easygui.msgbox("Error: Please enter a valid number of trips!", title="INVALID INPUT")
                                         self.show_selection_screen()
                                 else:
                                         # If all inputs are valid, set the respective variables to True
@@ -555,17 +555,17 @@ class gui_handler:
                                                 departure_date_valid = True
                                         except ValueError:
                                                 departure_date_valid = False
-                                                # messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid date format!')
+                                                easygui.msgbox("Error: Please enter a valid date format!", title="INVALID INPUT")
                                                 self.show_selection_screen()
                                         
                                         if departure_day_text < datetime.now().strftime('%Y%m%d'):
                                                 departure_date_valid = False
-                                                # messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid date!')
+                                                easygui.msgbox("Error: Please enter a valid date!", title="INVALID INPUT")
                                                 self.show_selection_screen()
                                         
                                         if int(departure_day_text) >= int(datetime.now().strftime('%Y%m%d')) + 400:
                                                 departure_date_valid = False
-                                                # messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid date!')
+                                                easygui.msgbox("Error: Please enter a valid date!", title="INVALID INPUT")
                                                 self.show_selection_screen()
 
                                         try:
@@ -573,11 +573,10 @@ class gui_handler:
                                                 departure_time_valid = True
                                         except ValueError:
                                                 departure_time_valid = False
-                                                # messagebox.showerror('INVALID INPUT', 'Error: Please enter a valid time format!')
+                                                easygui.msgbox("Error: Please enter a valid time format!", title="INVALID INPUT")
                                                 self.show_selection_screen()
                                                 
                         else:
-                                import easygui
                                 easygui.msgbox("Error: Please enter valid input for all fields!", title="INVALID INPUT")
                                 self.show_selection_screen()
                         
@@ -769,7 +768,7 @@ class gui_handler:
                 all_keys = redis_connection.keys()
                 
                 if all_keys == []:
-                        # messagebox.showerror('INVALID INPUT', 'Error: Please save a trip first')
+                        easygui.msgbox("Error: Please save a trip first", title="INVALID INPUT")
                         self.show_start_screen()
                         display_saved_trips_screen.destroy()
                 else:
@@ -807,7 +806,7 @@ class gui_handler:
                                         self.show_start_screen()
                                         display_saved_trips_screen.destroy()
                                 else:
-                                        # messagebox.showerror('INVALID INPUT', 'Error: Please select a trip to delete')
+                                        easygui.msgbox("Error: Please select a trip to delete", title="INVALID INPUT")
                                         self.show_display_saved_trips_screen()
                         
                         trips_tree.bind("<Double-1>", on_double_click)
