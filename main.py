@@ -432,7 +432,7 @@ class gui_handler:
                                 
                 start_screen = ctk.CTkFrame(self.master)
                 start_screen.pack(side="top", fill="both", expand=True)
-                print(start_screen.winfo_name())
+                # print(start_screen.winfo_name())
 
                 # Ensuring widgets will be centred within the screen
                 start_screen.grid_propagate(False)
@@ -467,7 +467,7 @@ class gui_handler:
         
                 selection_screen = ctk.CTkFrame(self.master)
                 selection_screen.pack(fill='both', expand=True, padx=10, pady=10)
-                print(selection_screen.winfo_name())
+                # print(selection_screen.winfo_name())
                 
                 # Ensuring widgets will be centred within the screen
                 selection_screen.grid_propagate(False)
@@ -602,7 +602,7 @@ class gui_handler:
                 
                 train_screen = ctk.CTkFrame(self.master)
                 train_screen.pack(fill="both", expand=True, padx=10, pady=10)
-                print(train_screen.winfo_name())
+                # print(train_screen.winfo_name())
                 
                 # Ensuring widgets will be centred within the screen
                 train_screen.grid_propagate(False)
@@ -659,7 +659,7 @@ class gui_handler:
                 
                 detailed_journey_screen = ctk.CTkFrame(self.master)
                 detailed_journey_screen.pack(fill="both", expand=True, padx=10, pady=10)
-                print(detailed_journey_screen.winfo_name())
+                # print(detailed_journey_screen.winfo_name())
 
                 # Ensuring widgets will be centred within the screen
                 detailed_journey_screen.grid_propagate(False)
@@ -756,7 +756,7 @@ class gui_handler:
                 
                 display_saved_trips_screen = ctk.CTkFrame(self.master)
                 display_saved_trips_screen.pack(fill="both", expand=True, padx=10, pady=10)
-                print(display_saved_trips_screen.winfo_name())
+                # print(display_saved_trips_screen.winfo_name())
                 
                 # Ensuring widgets will be centred within the screen
                 display_saved_trips_screen.grid_propagate(False)
@@ -828,7 +828,7 @@ class gui_handler:
                 
                 saved_trip_detailed_screen = ctk.CTkFrame(self.master)
                 saved_trip_detailed_screen.pack(fill="both", expand=True, padx=10, pady=10)
-                print(saved_trip_detailed_screen.winfo_name())
+                # print(saved_trip_detailed_screen.winfo_name())
                 
                 # Ensuring widgets will be centred within the screen
                 saved_trip_detailed_screen.grid_propagate(False)
@@ -862,10 +862,8 @@ class gui_handler:
                 saved_trip_detailed_screen.destroy()
                 saved_trip_detailed_screen = None
                 
-                if saved_trip_detailed_screen is not None:
-                        # back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
-                        back_button = ctk.CTkButton(master=saved_trip_detailed_screen, text="Back", command=self.show_display_saved_trips_screen)
-                        back_button.grid(row=3, column=1, pady=10)
+                back_button = ctk.CTkButton(master=saved_trip_detailed_screen, text="Back", command=self.show_display_saved_trips_screen)
+                back_button.grid(row=3, column=1, pady=10)
                 
                 self.current_screen = saved_trip_detailed_screen
     
