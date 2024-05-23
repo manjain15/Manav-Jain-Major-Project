@@ -290,7 +290,7 @@ loading_label = tk.Label(root, text="Obtaining real-time data...", bg="white", f
 loading_label.pack(pady=10)
 
 # Create a canvas with a white background
-canvas = tk.Canvas(root, width=600, height=100, bg='white', highlightthickness=0)
+canvas = tk.Canvas(root, width=650, height=100, bg='white', highlightthickness=0)
 canvas.pack(pady=10)
 
 # Load the bus image 
@@ -310,7 +310,7 @@ def move_bus():
     canvas.move(bus_sprite, 5, 0)  # Move the bus to the right
     # Check if the bus has moved off the screen
     x, _ = canvas.coords(bus_sprite)
-    if x > 600:
+    if x > 650:
         canvas.coords(bus_sprite, 50, 50)  # Reset the position
     bus_update_after_id = root.after(50, move_bus)  # Schedule the next movement
 
@@ -432,6 +432,7 @@ class gui_handler:
                                 
                 start_screen = ctk.CTkFrame(self.master)
                 start_screen.pack(side="top", fill="both", expand=True)
+                print(start_screen.winfo_name())
 
                 # Ensuring widgets will be centred within the screen
                 start_screen.grid_propagate(False)
@@ -449,11 +450,11 @@ class gui_handler:
                 image_label = ctk.CTkLabel(start_screen, text="", image=start_screen_image)
                 image_label.grid(row=4, column=1, padx=10, pady=10)
 
-                display_saved_trips_image = ctk.CTkImage(light_image=Image.open('button_display-saved-trips.png'), dark_image=Image.open('button_display-saved-trips.png'), size=(196, 17))                
+                # display_saved_trips_image = ctk.CTkImage(light_image=Image.open('button_display-saved-trips.png'), dark_image=Image.open('button_display-saved-trips.png'), size=(196, 17))                
                 display_saved_trips = ctk.CTkButton(master=start_screen, text="Display Saved Trips", command=self.show_display_saved_trips_screen)
                 display_saved_trips.grid(row=6, column=1, padx=10, pady=10)
                 
-                add_new_trip_image = ctk.CTkImage(light_image=Image.open('button_add-new-trip.png'), dark_image=Image.open('button_add-new-trip.png'), size=(87, 17))
+                # add_new_trip_image = ctk.CTkImage(light_image=Image.open('button_add-new-trip.png'), dark_image=Image.open('button_add-new-trip.png'), size=(87, 17))
                 add_new_trip = ctk.CTkButton(master=start_screen, text="+", command=lambda: self.show_selection_screen())
                 add_new_trip.grid(row=5, column=1, padx=10, pady=10)
                 
@@ -466,6 +467,7 @@ class gui_handler:
         
                 selection_screen = ctk.CTkFrame(self.master)
                 selection_screen.pack(fill='both', expand=True, padx=10, pady=10)
+                print(selection_screen.winfo_name())
                 
                 # Ensuring widgets will be centred within the screen
                 selection_screen.grid_propagate(False)
@@ -584,11 +586,11 @@ class gui_handler:
                                 self.show_train_screen(start_station_combobox.get(), destination_combobox.get(), cal.get_date(), departure_time_text, int(no_of_trips_entry.get()))
                                 selection_screen.destroy()
                 
-                next_button_image = ctk.CTkImage(light_image=Image.open('button_next.png'), dark_image=Image.open('button_next.png'), size=(109, 17))
+                # next_button_image = ctk.CTkImage(light_image=Image.open('button_next.png'), dark_image=Image.open('button_next.png'), size=(109, 17))
                 next_button = ctk.CTkButton(selection_screen, text="Next", command=check_validity)
                 next_button.grid(row=11, column=2, columnspan=2, pady=10)
 
-                back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
+                # back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
                 back_button = ctk.CTkButton(selection_screen, text="Back", command=self.show_start_screen)
                 back_button.grid(row=12, column=2, pady=10)
                 
@@ -601,6 +603,7 @@ class gui_handler:
                 
                 train_screen = ctk.CTkFrame(self.master)
                 train_screen.pack(fill="both", expand=True, padx=10, pady=10)
+                print(train_screen.winfo_name())
                 
                 # Ensuring widgets will be centred within the screen
                 train_screen.grid_propagate(False)
@@ -645,7 +648,7 @@ class gui_handler:
                 for train in train_info:
                         tree.insert("", "end", values=train)
                 
-                back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
+                # back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
                 back_button = ctk.CTkButton(train_screen, text="Back", command=self.show_selection_screen)
                 back_button.grid(row=3, column=1, pady=10)
                 
@@ -657,6 +660,7 @@ class gui_handler:
                 
                 detailed_journey_screen = ctk.CTkFrame(self.master)
                 detailed_journey_screen.pack(fill="both", expand=True, padx=10, pady=10)
+                print(detailed_journey_screen.winfo_name())
 
                 # Ensuring widgets will be centred within the screen
                 detailed_journey_screen.grid_propagate(False)
@@ -728,11 +732,11 @@ class gui_handler:
                         self.show_start_screen()
                 
                 # Back button to return to the previous screen
-                back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
+                # back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
                 back_button = ctk.CTkButton(detailed_journey_screen, text="Back", command=lambda: self.show_train_screen(start_station, destination_station, departure_day, departure_time, no_of_trips))
                 back_button.grid(row=3, column=1, pady=10)
                 
-                save_trip_image = ctk.CTkImage(light_image=Image.open('button_save-trip.png'), dark_image=Image.open('button_save-trip.png'), size=(134, 17))
+                # save_trip_image = ctk.CTkImage(light_image=Image.open('button_save-trip.png'), dark_image=Image.open('button_save-trip.png'), size=(134, 17))
                 save_trip_button = ctk.CTkButton(detailed_journey_screen, text="Save Trip", command=save_trip)
                 save_trip_button.grid(row=4, column=1, pady=10)
 
@@ -741,7 +745,7 @@ class gui_handler:
                         filename = 'file:///'+os.getcwd()+'/' + 'route_map.html'
                         webbrowser.open_new_tab(filename)
 
-                display_map_image = ctk.CTkImage(light_image=Image.open('button_display-map.png'), dark_image=Image.open('button_display-map.png'), size=(153, 19))
+                # display_map_image = ctk.CTkImage(light_image=Image.open('button_display-map.png'), dark_image=Image.open('button_display-map.png'), size=(153, 19))
                 display_map_button = ctk.CTkButton(detailed_journey_screen, text="Display Map", command=display_map)
                 display_map_button.grid(row=5, column=1, pady=10)
 
@@ -753,6 +757,7 @@ class gui_handler:
                 
                 display_saved_trips_screen = ctk.CTkFrame(self.master)
                 display_saved_trips_screen.pack(fill="both", expand=True, padx=10, pady=10)
+                print(display_saved_trips_screen.winfo_name())
                 
                 # Ensuring widgets will be centred within the screen
                 display_saved_trips_screen.grid_propagate(False)
@@ -808,11 +813,11 @@ class gui_handler:
                         trips_tree.bind("<Double-1>", on_double_click)
                         trips_tree.bind("<ButtonRelease-1>", on_single_click)
                         
-                        back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
+                        # back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
                         back_button = ctk.CTkButton(master=display_saved_trips_screen, text="Back", command=self.show_start_screen)
                         back_button.grid(row=2, column=1, pady=10)
 
-                        delete_button_image = ctk.CTkImage(light_image=Image.open('button_delete-trip.png'), dark_image=Image.open('button_delete-trip.png'), size=(157, 17))
+                        # delete_button_image = ctk.CTkImage(light_image=Image.open('button_delete-trip.png'), dark_image=Image.open('button_delete-trip.png'), size=(157, 17))
                         delete_button = ctk.CTkButton(master=display_saved_trips_screen, text="Delete Trip", command=on_delete)
                         delete_button.grid(row=3, column=1, pady=10)
                         
@@ -824,6 +829,7 @@ class gui_handler:
                 
                 saved_trip_detailed_screen = ctk.CTkFrame(self.master)
                 saved_trip_detailed_screen.pack(fill="both", expand=True, padx=10, pady=10)
+                print(saved_trip_detailed_screen.winfo_name())
                 
                 # Ensuring widgets will be centred within the screen
                 saved_trip_detailed_screen.grid_propagate(False)
@@ -858,7 +864,7 @@ class gui_handler:
                 saved_trip_detailed_screen = None
                 
                 if saved_trip_detailed_screen is not None:
-                        back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
+                        # back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
                         back_button = ctk.CTkButton(master=saved_trip_detailed_screen, text="Back", command=self.show_display_saved_trips_screen)
                         back_button.grid(row=3, column=1, pady=10)
                 
