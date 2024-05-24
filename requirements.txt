@@ -1,0 +1,11 @@
+easygui
+customtkinter
+CTkListbox
+tkcalendar
+tktimepicker
+requests
+redislite
+pillow
+folium
+pygame
+TransportNSW
