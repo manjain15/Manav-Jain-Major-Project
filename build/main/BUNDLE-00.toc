@@ -1,3 +1,0 @@
-([('main',
-   '/Users/manavjain/github-classroom/Baulkhamhills-hs/Manav-Jain-Major-Project/dist/main',
-   'EXECUTABLE')],)
