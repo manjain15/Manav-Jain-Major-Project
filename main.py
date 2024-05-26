@@ -32,7 +32,7 @@ from TransportNSW import TransportNSW
 tnsw = TransportNSW()
 
 # Establish a connection to the redis database
-redis_connection = redislite.Redis("/Users/manavjain/github-classroom/Baulkhamhills-hs/Manav-Jain-Major-Project/Trips", ":memory")
+redis_connection = redislite.Redis("/Manav-Jain-Major-Project-main/Trips", ":memory")
 
 # START OF AUTOCOMPLETE COMBOBOX CODE
 class AutocompleteCombobox(ttk.Combobox):
