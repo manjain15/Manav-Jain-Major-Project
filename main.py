@@ -685,70 +685,76 @@ class gui_handler:
                                                 coords.update({stop_name:coord})
                 
                 # Create a map centered at the mean latitude and longitude of the coordinates
-                map_center = [sum(coord[0] for coord in coords.values()) / len(coords.values()), sum(coord[1] for coord in coords.values()) / len(coords.values())]
-                
-                # Create the map
-                m = folium.Map(location=map_center, zoom_start=12)
-                
-                # Add markers for each coordinate
-                for name, coord in coords.items():
-                        folium.Marker(location=coord, popup=name).add_to(m)
-                
-                # Create an AntPath to represent the transport route
-                ant_path = plugins.AntPath(locations=coords.values(), color='blue')
-                m.add_child(ant_path)
-                
-                # Save the map to an HTML file
-                m.save('route_map.html')       
-                
-                for key,val in trip_info_dict["journeys"][journey_index].items():
-                        if key == "legs":
-                                legs = val
-                                for leg in legs:
-                                        transport = leg["transportation"].get("disassembledName")
-                                        if transport is None:
-                                                transport = "Walk"
-                                        if transport == "M":
-                                                transport == "Metro"
-                                        origin = leg["origin"]["name"]
-                                        departure = leg["origin"]["departureTimeEstimated"][11:16]
-                                        destination = leg["destination"]["name"]
-                                        arrival = leg["destination"]["arrivalTimeEstimated"][11:16]
-                                        # Append train information to the list
-                                        train_info.append((transport, origin, departure, destination, arrival))
-                                journey_index +=1
-                
-                for train in train_info:
-                        tree.insert("", "end", values=train)
-                
-                origin = trip_info_dict["journeys"][original_journey_index]["legs"][0]["origin"]["name"]
-                destination = trip_info_dict["journeys"][original_journey_index]["legs"][-1]["destination"]["name"]
+                try:
+                        map_center = [sum(coord[0] for coord in coords.values()) / len(coords.values()), sum(coord[1] for coord in coords.values()) / len(coords.values())]
+                       
+                        # Create the map
+                        m = folium.Map(location=map_center, zoom_start=12)
+                        
+                        # Add markers for each coordinate
+                        for name, coord in coords.items():
+                                folium.Marker(location=coord, popup=name).add_to(m)
+                        
+                        # Create an AntPath to represent the transport route
+                        ant_path = plugins.AntPath(locations=coords.values(), color='blue')
+                        m.add_child(ant_path)
+                        
+                        # Save the map to an HTML file
+                        m.save('route_map.html')       
+                        
+                        for key,val in trip_info_dict["journeys"][journey_index].items():
+                                if key == "legs":
+                                        legs = val
+                                        for leg in legs:
+                                                transport = leg["transportation"].get("disassembledName")
+                                                if transport is None:
+                                                        transport = "Walk"
+                                                if transport == "M":
+                                                        transport == "Metro"
+                                                origin = leg["origin"]["name"]
+                                                departure = leg["origin"]["departureTimeEstimated"][11:16]
+                                                destination = leg["destination"]["name"]
+                                                arrival = leg["destination"]["arrivalTimeEstimated"][11:16]
+                                                # Append train information to the list
+                                                train_info.append((transport, origin, departure, destination, arrival))
+                                        journey_index +=1
+                        
+                        for train in train_info:
+                                tree.insert("", "end", values=train)
+                        
+                        origin = trip_info_dict["journeys"][original_journey_index]["legs"][0]["origin"]["name"]
+                        destination = trip_info_dict["journeys"][original_journey_index]["legs"][-1]["destination"]["name"]
 
-                def save_trip():
-                        trip_id = f"{origin} to {destination}"
-                        train_json = json.dumps(train_info)
-                        redis_connection.set(trip_id, train_json)
-                        self.show_start_screen()
-                
-                # Back button to return to the previous screen
-                # back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
-                back_button = ctk.CTkButton(detailed_journey_screen, text="Back", command=lambda: self.show_train_screen(start_station, destination_station, departure_day, departure_time, no_of_trips))
-                back_button.grid(row=3, column=1, pady=10)
-                
-                # save_trip_image = ctk.CTkImage(light_image=Image.open('button_save-trip.png'), dark_image=Image.open('button_save-trip.png'), size=(134, 17))
-                save_trip_button = ctk.CTkButton(detailed_journey_screen, text="Save Trip", command=save_trip)
-                save_trip_button.grid(row=4, column=1, pady=10)
+                        def save_trip():
+                                trip_id = f"{origin} to {destination}"
+                                train_json = json.dumps(train_info)
+                                redis_connection.set(trip_id, train_json)
+                                self.show_start_screen()
+                        
+                        # Back button to return to the previous screen
+                        # back_button_image = ctk.CTkImage(light_image=Image.open('button_back.png'), dark_image=Image.open('button_back.png'), size=(107, 17))
+                        back_button = ctk.CTkButton(detailed_journey_screen, text="Back", command=lambda: self.show_train_screen(start_station, destination_station, departure_day, departure_time, no_of_trips))
+                        back_button.grid(row=3, column=1, pady=10)
+                        
+                        # save_trip_image = ctk.CTkImage(light_image=Image.open('button_save-trip.png'), dark_image=Image.open('button_save-trip.png'), size=(134, 17))
+                        save_trip_button = ctk.CTkButton(detailed_journey_screen, text="Save Trip", command=save_trip)
+                        save_trip_button.grid(row=4, column=1, pady=10)
 
-                # Display the map in a web browser
-                def display_map():
-                        filename = 'file:///'+os.getcwd()+'/' + 'route_map.html'
-                        webbrowser.open_new_tab(filename)
+                        # Display the map in a web browser
+                        def display_map():
+                                filename = 'file:///'+os.getcwd()+'/' + 'route_map.html'
+                                webbrowser.open_new_tab(filename)
 
-                # display_map_image = ctk.CTkImage(light_image=Image.open('button_display-map.png'), dark_image=Image.open('button_display-map.png'), size=(153, 19))
-                display_map_button = ctk.CTkButton(detailed_journey_screen, text="Display Map", command=display_map)
-                display_map_button.grid(row=5, column=1, pady=10)
+                        # display_map_image = ctk.CTkImage(light_image=Image.open('button_display-map.png'), dark_image=Image.open('button_display-map.png'), size=(153, 19))
+                        display_map_button = ctk.CTkButton(detailed_journey_screen, text="Display Map", command=display_map)
+                        display_map_button.grid(row=5, column=1, pady=10)
 
-                self.current_screen = detailed_journey_screen
+                        self.current_screen = detailed_journey_screen
+
+                except ZeroDivisionError:
+                        easygui.msgbox("Error: No coordinates found. Try again", title="INVALID INPUT")
+                        self.show_train_screen(start_station, destination_station, departure_day, departure_time, no_of_trips)
+                        detailed_journey_screen.destroy()
         
         def show_display_saved_trips_screen(self):
                 if self.current_screen:
