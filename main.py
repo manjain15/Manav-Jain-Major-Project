@@ -857,7 +857,6 @@ class gui_handler:
 
                 self.show_train_screen(start_station_name, destination_station_name, converted_date, converted_time, 3)
                 saved_trip_detailed_screen.destroy()
-                saved_trip_detailed_screen = None
                 
                 back_button = ctk.CTkButton(master=saved_trip_detailed_screen, text="Back", command=self.show_display_saved_trips_screen)
                 back_button.grid(row=3, column=1, pady=10)
@@ -874,7 +873,7 @@ def main():
         root.resizable(False, False)
         main = gui_handler(root)
         def on_closing():
-                redis_connection.flushdb()
+                # redis_connection.flushdb()
                 redis_connection.close()
                 root.destroy()
         
