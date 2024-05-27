@@ -532,18 +532,14 @@ class gui_handler:
                                 if origin_text not in start_stations:
                                         origin_valid = False
                                         easygui.msgbox("Error: Please enter a valid origin!", title="INVALID INPUT")
-                                        self.show_selection_screen()
                                 elif destination_text not in destination_stations:
                                         destination_valid = False
                                         easygui.msgbox("Error: Please enter a valid destination!", title="INVALID INPUT")
-  
-                                        self.show_selection_screen()
                                 
                                 # Checking if the number of trips is valid
                                 elif int(no_of_trips_text) < 1:
                                         no_of_trips_valid = False
                                         easygui.msgbox("Error: Please enter a valid number of trips!", title="INVALID INPUT")
-                                        self.show_selection_screen()
                                 else:
                                         # If all inputs are valid, set the respective variables to True
                                         origin_valid = True
@@ -556,17 +552,14 @@ class gui_handler:
                                         except ValueError:
                                                 departure_date_valid = False
                                                 easygui.msgbox("Error: Please enter a valid date format!", title="INVALID INPUT")
-                                                self.show_selection_screen()
                                         
                                         if departure_day_text < datetime.now().strftime('%Y%m%d'):
                                                 departure_date_valid = False
                                                 easygui.msgbox("Error: Please enter a valid date!", title="INVALID INPUT")
-                                                self.show_selection_screen()
                                         
                                         if int(departure_day_text) >= int(datetime.now().strftime('%Y%m%d')) + 400:
                                                 departure_date_valid = False
                                                 easygui.msgbox("Error: Please enter a valid date!", title="INVALID INPUT")
-                                                self.show_selection_screen()
 
                                         try:
                                                 datetime.strptime(departure_time_text, '%H%M')
@@ -574,11 +567,9 @@ class gui_handler:
                                         except ValueError:
                                                 departure_time_valid = False
                                                 easygui.msgbox("Error: Please enter a valid time format!", title="INVALID INPUT")
-                                                self.show_selection_screen()
                                                 
                         else:
                                 easygui.msgbox("Error: Please enter valid input for all fields!", title="INVALID INPUT")
-                                self.show_selection_screen()
                         
                         # If all inputs are valid, show the train screen
                         if origin_valid and destination_valid and departure_date_valid and departure_time_valid and no_of_trips_valid:
