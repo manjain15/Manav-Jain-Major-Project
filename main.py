@@ -851,11 +851,13 @@ class gui_handler:
 
                 current_date = datetime.now().strftime("%Y%m%d")
                 current_time = datetime.now().strftime("%H%M")
+                print(current_date, current_time)
 
                 # Convert to UTC
-                converted_date, converted_time = add_hours_to_sydney_time(current_date, current_time)
+                # converted_date, converted_time = add_hours_to_sydney_time(current_date, current_time)
+                # print(converted_date, converted_time)
 
-                self.show_train_screen(start_station_name, destination_station_name, converted_date, converted_time, 3)
+                self.show_train_screen(start_station_name, destination_station_name, current_date, current_time, 3)
                 saved_trip_detailed_screen.destroy()
                 
                 back_button = ctk.CTkButton(master=saved_trip_detailed_screen, text="Back", command=self.show_display_saved_trips_screen)
