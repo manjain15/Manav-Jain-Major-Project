@@ -74,11 +74,8 @@ class AutocompleteCombobox(ttk.Combobox):
             self.delete(self.index(INSERT), END)  # Handle backspace: delete character at cursor
             self.position = self.index(END)
         elif event.keysym == "Left":
-            if self.position < self.index(END):
-                self.delete(self.position, END)  # Handle left arrow: delete text after the current position
-            else:
-                self.position -= 1
-                self.delete(self.position, END)
+                if self.position > 0:
+                        self.position -= 1  # Move cursor to the left without deleting
         elif event.keysym == "Right":
             self.position = self.index(END)  # Handle right arrow: move cursor to the end
         elif len(event.keysym) == 1:
