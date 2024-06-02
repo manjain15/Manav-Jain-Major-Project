@@ -403,13 +403,13 @@ class gui_handler:
                 selection_screen.grid_columnconfigure(0, weight=1)
                 selection_screen.grid_columnconfigure(4, weight=1)
 
-                ctk.CTkLabel(selection_screen, text="Select Starting Stop:").grid(row=1, column=2, padx=10, pady=10, sticky="nsew")
+                ctk.CTkLabel(selection_screen, text="Select Starting Stop/Station:").grid(row=1, column=2, padx=10, pady=10, sticky="nsew")
                 start_stations = list(all_stops.keys())
                 start_station_combobox = AutocompleteCombobox(selection_screen)
                 start_station_combobox.set_completion_list(start_stations)
                 start_station_combobox.grid(row=2, column=2, padx=10, pady=10, sticky="nsew")
                 
-                ctk.CTkLabel(selection_screen, text="Select Destination Stop:").grid(row=3, column=2, padx=10, pady=10, sticky="nsew")
+                ctk.CTkLabel(selection_screen, text="Select Destination Stop/Station:").grid(row=3, column=2, padx=10, pady=10, sticky="nsew")
                 destination_stations = list(all_stops.keys())
                 destination_combobox = AutocompleteCombobox(selection_screen)
                 destination_combobox.set_completion_list(destination_stations)
