@@ -435,7 +435,7 @@ class gui_handler:
                 time_picker.setMins(default_time[2:4])
                 time_picker.grid(row=8, column=2, padx=10, pady=10, sticky="nsew")
                 
-                ctk.CTkLabel(selection_screen, text="How many trip options would you like?").grid(row=9, column=2, padx=10, pady=10, sticky="nsew")
+                ctk.CTkLabel(selection_screen, text="How many route options would you like?").grid(row=9, column=2, padx=10, pady=10, sticky="nsew")
                 no_of_trips_entry = ctk.CTkEntry(selection_screen, placeholder_text="Enter a number ≥ 1")
                 no_of_trips_entry.grid(row=10, column=2, padx=10, pady=10, sticky="nsew")
                 
