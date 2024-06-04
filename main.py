@@ -315,7 +315,7 @@ root.mainloop()  # This will block until the window is closed
 bus_thread.join()
 train_thread.join()
 
-# After the loading screen, you can continue with the next steps
+# Collating data into usable data containers
 parsed_bus_data = data_container.get('bus', None)
 parsed_train_data = data_container.get('train', None)
 
@@ -358,11 +358,11 @@ class gui_handler:
                 # Start Screen
                 self.show_start_screen()
         
-        # CODE FOR FIRST SCREEN
+        # CODE FOR THE START SCREEN
         def show_start_screen(self):
                 if self.current_screen:
                         self.current_screen.destroy()
-                                
+                                                        
                 start_screen = ctk.CTkFrame(self.master)
                 start_screen.pack(side="top", fill="both", expand=True)
 
@@ -373,6 +373,7 @@ class gui_handler:
                 start_screen.grid_columnconfigure(0, weight=1)
                 start_screen.grid_columnconfigure(11, weight=1)
                 
+                # Creating and placing labels and buttons on the start screen
                 ctk.CTkLabel(master=start_screen, text="ViewTrip", font=("Canela Deck Trial", 25)).grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
                 
                 ctk.CTkLabel(master=start_screen, text="Welcome to ViewTrip", font=("Canela Text Trial", 20)).grid(row=2, column=1, padx=10, pady=10, sticky="nsew")
@@ -381,7 +382,7 @@ class gui_handler:
                 start_screen_image = ctk.CTkImage(light_image=Image.open('start_screen_logo.png'), dark_image=Image.open('start_screen_logo.png'), size=(250, 130))
                 image_label = ctk.CTkLabel(start_screen, text="", image=start_screen_image)
                 image_label.grid(row=4, column=1, padx=10, pady=10)
-               
+           
                 display_saved_trips = ctk.CTkButton(master=start_screen, text="Display Saved Trips", command=self.show_display_saved_trips_screen)
                 display_saved_trips.grid(row=6, column=1, padx=10, pady=10)
                 
@@ -390,11 +391,11 @@ class gui_handler:
                 
                 self.current_screen = start_screen
         
-        # CODE FOR SECOND SCREEN
+        # CODE FOR THE SELECTION SCREEN
         def show_selection_screen(self):
                 if self.current_screen:
                         self.current_screen.destroy()
-        
+
                 selection_screen = ctk.CTkFrame(self.master)
                 selection_screen.pack(fill='both', expand=True, padx=10, pady=10)
                 
@@ -403,6 +404,7 @@ class gui_handler:
                 selection_screen.grid_columnconfigure(0, weight=1)
                 selection_screen.grid_columnconfigure(4, weight=1)
 
+                # Creating and placing labels, comboboxes, and other input fields on the selection screen
                 ctk.CTkLabel(selection_screen, text="Select Starting Stop/Station:").grid(row=1, column=2, padx=10, pady=10, sticky="nsew")
                 start_stations = list(all_stops.keys())
                 start_station_combobox = AutocompleteCombobox(selection_screen)
@@ -417,9 +419,9 @@ class gui_handler:
 
                 ctk.CTkLabel(selection_screen, text="Select Departure Date:").grid(row=5, column=2, padx=10, pady=10, sticky="nsew")
                 cal = Calendar(selection_screen, selectmode = 'day', date_pattern = "yyyyMMdd", showweeknumbers=False,
-                               font="Canela 13" ,cursor="hand1", background="black", foreground="white", headersbackground="white", 
-                               headersforeground="white", selectbackground="white", selectforeground="#FFA500", normalbackground="white",
-                               normalforeground="white", weekendbackground="white", weekendforeground="white", othermonthbackground="white",)
+                                           font="Canela 13" ,cursor="hand1", background="black", foreground="white", headersbackground="white", 
+                                           headersforeground="white", selectbackground="white", selectforeground="#FFA500", normalbackground="white",
+                                           normalforeground="white", weekendbackground="white", weekendforeground="white", othermonthbackground="white",)
 
                 cal.grid(row=6, column=2, padx=10, pady=10, sticky="nsew")
                 
@@ -428,7 +430,7 @@ class gui_handler:
                 time_picker = SpinTimePickerModern(selection_screen)
                 time_picker.addAll(constants.HOURS24)  # adds hours clock, minutes and period
                 time_picker.configureAll(bg="#ffffff", height=1, fg="#000000", font=("Calibri", 13), hoverbg="#ffffff",
-                                        hovercolor="#014421", clickedbg="#000000", clickedcolor="#FFA500")
+                                                                hovercolor="#014421", clickedbg="#000000", clickedcolor="#FFA500")
                 time_picker.configure_separator(fg="#000000", bg="#ffffff")
                 default_time = datetime.now().strftime('%H%M')
                 time_picker.set24Hrs(default_time[0:2])
@@ -496,7 +498,7 @@ class gui_handler:
                                         except ValueError:
                                                 departure_time_valid = False
                                                 easygui.msgbox("Error: Please enter a valid time format!", title="INVALID INPUT")
-                                                
+                                                                                
                         else:
                                 easygui.msgbox("Error: Please enter valid input for all fields!", title="INVALID INPUT")
                         
@@ -513,7 +515,7 @@ class gui_handler:
                 
                 self.current_screen = selection_screen
 
-        # CODE FOR THIRD SCREEN
+        # CODE FOR THE SHOW TRAIN SCREEN
         def show_train_screen(self, start_station, destination_station, departure_day, departure_time, no_of_trips):
                 if self.current_screen:
                         self.current_screen.destroy()
@@ -528,8 +530,10 @@ class gui_handler:
                 train_screen.grid_columnconfigure(0, weight=1)
                 train_screen.grid_columnconfigure(2, weight=1)
 
+                # Label to display the starting station
                 ctk.CTkLabel(train_screen, text=f"Trips from {start_station}").grid(row=1, column=1, pady=10)
 
+                # Treeview to display the train trips
                 tree = ttk.Treeview(train_screen, columns=("Journey", "Departure", "Arrival"), show="headings")
                 tree.column("Journey",anchor="center", width=95)
                 tree.heading("Journey", text="Journey")
@@ -550,25 +554,30 @@ class gui_handler:
                 
                 tree.bind("<ButtonRelease-1>", on_item_click)
                 
+                # Get the stop IDs for the starting and destination stations
                 global start_stop_id
                 start_stop_id = all_stops[start_station][1:]
 
                 global destination_stop_id
                 destination_stop_id = all_stops[destination_station][1:]
 
-                # Convert to UTC
+                # Convert the departure date and time to UTC
                 converted_date, converted_time = add_hours_to_sydney_time(departure_day, departure_time)
 
+                # Get the train information and trip info dictionary
                 train_info, trip_info_dict = get_train_info(api_key, start_stop_id, destination_stop_id, converted_date, converted_time, no_of_trips)
                 
+                # Insert the train information into the treeview
                 for train in train_info:
                         tree.insert("", "end", values=train)
                 
+                # Button to go back to the selection screen
                 back_button = ctk.CTkButton(train_screen, text="Back", command=self.show_selection_screen)
                 back_button.grid(row=3, column=1, pady=10)
                 
                 self.current_screen = train_screen
         
+        # CODE FOR THE DETAILED JOURNEY INFO SCREEN
         def show_detailed_journey_info_screen(self, trip_info_dict, treeview_values, start_station, destination_station, departure_day, departure_time, no_of_trips):
                 if self.current_screen:
                         self.current_screen.destroy()
@@ -582,8 +591,10 @@ class gui_handler:
                 detailed_journey_screen.grid_rowconfigure(6, weight=1)
                 detailed_journey_screen.grid_columnconfigure(1, weight=1)
                 
+                # Label to display the journey details
                 ctk.CTkLabel(detailed_journey_screen, text=f"Journey Details from {start_station} to \n {destination_station}").grid(row=1, column=1, pady=10)
 
+                # Treeview to display the train information
                 tree = detailed_tree_view(detailed_journey_screen, 2)
                 
                 train_info = []
@@ -640,6 +651,7 @@ class gui_handler:
                         origin = trip_info_dict["journeys"][original_journey_index]["legs"][0]["origin"]["name"]
                         destination = trip_info_dict["journeys"][original_journey_index]["legs"][-1]["destination"]["name"]
 
+                        # Function to save the trip information to Redis
                         def save_trip():
                                 trip_id = f"{origin} to {destination}"
                                 train_json = json.dumps(train_info)
@@ -650,10 +662,11 @@ class gui_handler:
                         back_button = ctk.CTkButton(detailed_journey_screen, text="Back", command=lambda: self.show_train_screen(start_station, destination_station, departure_day, departure_time, no_of_trips))
                         back_button.grid(row=3, column=1, pady=10)
                         
+                        # Button to save the trip
                         save_trip_button = ctk.CTkButton(detailed_journey_screen, text="Save Trip", command=save_trip)
                         save_trip_button.grid(row=4, column=1, pady=10)
 
-                        # Display the map in a web browser
+                        # Button to display the map in a web browser
                         def display_map():
                                 filename = 'file:///'+os.getcwd()+'/' + 'route_map.html'
                                 webbrowser.open_new_tab(filename)
@@ -668,32 +681,39 @@ class gui_handler:
                         self.show_train_screen(start_station, destination_station, departure_day, departure_time, no_of_trips)
                         detailed_journey_screen.destroy()
         
+        # CODE FOR THE DISPLAY SAVED TRIPS SCREEN
         def show_display_saved_trips_screen(self):
+                # Check if there is a current screen and destroy it
                 if self.current_screen:
                         self.current_screen.destroy()
                 
+                # Create a new frame for the display saved trips screen
                 display_saved_trips_screen = ctk.CTkFrame(self.master)
                 display_saved_trips_screen.pack(fill="both", expand=True, padx=10, pady=10)
                 
-                # Ensuring widgets will be centred within the screen
+                # Ensure widgets will be centered within the screen
                 display_saved_trips_screen.grid_propagate(False)
                 display_saved_trips_screen.grid_rowconfigure(0, weight=1)
                 display_saved_trips_screen.grid_rowconfigure(4, weight=1)
                 display_saved_trips_screen.grid_columnconfigure(0, weight=1)
                 display_saved_trips_screen.grid_columnconfigure(2, weight=1)
 
+                # Get all the keys from the Redis database
                 all_keys = redis_connection.keys()
                 
+                # Check if there are any saved trips
                 if all_keys == []:
                         easygui.msgbox("Error: Please save a trip first", title="INVALID INPUT")
                         self.show_start_screen()
                         display_saved_trips_screen.destroy()
                 else:
+                        # Create a treeview to display the saved trips
                         trips_tree = ttk.Treeview(display_saved_trips_screen, columns=("Trip"), show="headings")
-                        trips_tree.column("Trip",anchor="center", width=300)
+                        trips_tree.column("Trip", anchor="center", width=300)
                         trips_tree.heading("Trip", text="Trip")
                         trips_tree.grid(row=1, column=1, pady=10)
                         
+                        # Insert the saved trips into the treeview
                         for key in all_keys:
                                 key_str = key.decode('utf-8')
                                 trips_tree.insert("", "end", text=key_str, values=(key_str,))
@@ -701,24 +721,32 @@ class gui_handler:
 
                         # Handler for single click event
                         def on_single_click(event):
+                                # Get the ID of the clicked item
                                 item_id = trips_tree.focus()
                                 if item_id:
+                                        # Get the values of the clicked item
                                         item_values = list(trips_tree.item(item_id, "values"))
 
                         # Handler for double click event
                         def on_double_click(event):
-                                item_id = trips_tree.focus()  # Get the ID of the clicked item
-                                if item_id:  # Ensure that an item was clicked
+                                # Get the ID of the clicked item
+                                item_id = trips_tree.focus()
+                                if item_id:
+                                        # Get the values of the clicked item
                                         item_values = trips_tree.item(item_id, "values")
                                         if item_values:
+                                                # Destroy the display saved trips screen and show the detailed trip screen
                                                 display_saved_trips_screen.destroy()
                                                 self.show_saved_trip_detailed_screen(item_values)
 
                         # Handler for deleting trip
                         def on_delete():
+                                # Get the ID of the selected item
                                 item_id = trips_tree.focus()
                                 if item_id:
+                                        # Delete the selected trip from the Redis database
                                         redis_connection.delete(trips_tree.item(trips_tree.focus(), "text"))
+                                        # Destroy the display saved trips screen and show the start screen
                                         display_saved_trips_screen.destroy()
                                         self.show_start_screen()
                                         display_saved_trips_screen.destroy()
@@ -726,57 +754,76 @@ class gui_handler:
                                         easygui.msgbox("Error: Please select a trip to delete", title="INVALID INPUT")
                                         self.show_display_saved_trips_screen()
                         
+                        # Bind the double click event to the treeview
                         trips_tree.bind("<Double-1>", on_double_click)
+                        # Bind the single click event to the treeview
                         trips_tree.bind("<ButtonRelease-1>", on_single_click)
                         
+                        # Button to go back to the start screen
                         back_button = ctk.CTkButton(master=display_saved_trips_screen, text="Back", command=self.show_start_screen)
                         back_button.grid(row=2, column=1, pady=10)
 
+                        # Button to delete a saved trip
                         delete_button = ctk.CTkButton(master=display_saved_trips_screen, text="Delete Trip", command=on_delete)
                         delete_button.grid(row=3, column=1, pady=10)
                         
                         self.current_screen = display_saved_trips_screen
         
+        # CODE FOR THE SAVED TRIP DETAILED SCREEN
         def show_saved_trip_detailed_screen(self, treeview_values):
+                # Check if there is a current screen and destroy it
                 if self.current_screen:
                         self.current_screen.destroy()
                 
+                # Create a new frame for the saved trip detailed screen
                 saved_trip_detailed_screen = ctk.CTkFrame(self.master)
                 saved_trip_detailed_screen.pack(fill="both", expand=True, padx=10, pady=10)
                 
-                # Ensuring widgets will be centred within the screen
+                # Ensure widgets will be centered within the screen
                 saved_trip_detailed_screen.grid_propagate(False)
                 saved_trip_detailed_screen.grid_rowconfigure(0, weight=1)
                 saved_trip_detailed_screen.grid_rowconfigure(3, weight=1)
                 saved_trip_detailed_screen.grid_columnconfigure(0, weight=1)
                 saved_trip_detailed_screen.grid_columnconfigure(2, weight=1)
 
+                # Label to display the journey details
                 ctk.CTkLabel(saved_trip_detailed_screen, text=f"Journey Details for {treeview_values[0]}").grid(row=1, column=1, pady=10)
                 
+                # Create a detailed tree view to display the trip information
                 detailed_trips_tree = detailed_tree_view(saved_trip_detailed_screen, 2)
 
+                # Get the values from the Redis database for the selected trip
                 values = redis_connection.get(treeview_values[0]).decode('utf-8')
                 list_of_values = ast.literal_eval(values)
                 start_station_name = list_of_values[0][1]
                 destination_station_name = list_of_values[-1][3]
+                
+                # Find the exact station names from the all_stops dictionary
                 for key, val in all_stops.items():
                         if key in start_station_name or start_station_name in key:
-                              start_station_name = key
+                                start_station_name = key
                 for key, val in all_stops.items():
                         if key in destination_station_name or destination_station_name in key:
-                              destination_station_name = key
+                                destination_station_name = key
 
+                # Get the current date and time
                 current_date = datetime.now().strftime("%Y%m%d")
                 current_time = datetime.now().strftime("%H%M")
 
+                # Show the train screen with the selected trip details
                 self.show_train_screen(start_station_name, destination_station_name, current_date, current_time, 3)
+                
+                # Destroy the saved trip detailed screen
                 saved_trip_detailed_screen.destroy()
                 
+                # Create a back button to go back to the display saved trips screen
                 back_button = ctk.CTkButton(master=saved_trip_detailed_screen, text="Back", command=self.show_display_saved_trips_screen)
                 back_button.grid(row=3, column=1, pady=10)
                 
+                # Set the current screen to the saved trip detailed screen
                 self.current_screen = saved_trip_detailed_screen
-    
+
+# Main function to run the program    
 def main():        
         # Play the startup sound
         pygame.mixer.music.load("startup_sound.mp3")
@@ -786,14 +833,16 @@ def main():
         root.wm_geometry("570x750")
         root.resizable(False, False)
         main = gui_handler(root)
+        
         def on_closing():
-                # redis_connection.flushdb()
+                # Close the redis connection and destroy the root window
+                redis_connection.flushdb()
                 redis_connection.close()
                 root.destroy()
-        
+
         root.protocol("WM_DELETE_WINDOW", on_closing)
         root.mainloop()
-        
-        
+                
+                
 if __name__ == "__main__":
         main()
