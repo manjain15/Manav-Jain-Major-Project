@@ -836,7 +836,6 @@ def main():
         
         def on_closing():
                 # Close the redis connection and destroy the root window
-                redis_connection.flushdb()
                 redis_connection.close()
                 root.destroy()
 
