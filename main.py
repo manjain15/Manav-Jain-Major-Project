@@ -379,7 +379,7 @@ class gui_handler:
                 ctk.CTkLabel(master=start_screen, text="Welcome to ViewTrip", font=("Canela Text Trial", 20)).grid(row=2, column=1, padx=10, pady=10, sticky="nsew")
                 ctk.CTkLabel(master=start_screen, text="To get started, press the plus button\n to add a new trip").grid(row=3, column=1, padx=10, pady=10, sticky="nsew")
                 
-                start_screen_image = ctk.CTkImage(light_image=Image.open('start_screen_logo.png'), dark_image=Image.open('start_screen_logo.png'), size=(250, 130))
+                start_screen_image = ctk.CTkImage(light_image=Image.open('start_screen_logo_3.png'), dark_image=Image.open('start_screen_logo_3.png'), size=(200, 130))
                 image_label = ctk.CTkLabel(start_screen, text="", image=start_screen_image)
                 image_label.grid(row=4, column=1, padx=10, pady=10)
            
