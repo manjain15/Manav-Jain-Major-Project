@@ -1,1 +1,5 @@
 venv
+.vscode/
+testing_api/
+getrealtime_1.0.yaml
+getschedule-busextension_1.2.json
